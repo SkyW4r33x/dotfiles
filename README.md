@@ -1,5 +1,5 @@
 # dotfiles
-
+---
 Un repositorio con mis configuraciones personalizadas para **ZSH**, **Neovim con NvChad**, y comandos referenciales útiles para **pentesting**. Incluye scripts, herramientas y personalizaciones para optimizar tu flujo de trabajo.
 ---
 ## 🚀 Características principales
