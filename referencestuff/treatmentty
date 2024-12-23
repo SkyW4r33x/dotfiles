@@ -1,0 +1,58 @@
+//////////////////////////// UTILIDADES DE SHELL \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+==============================================================================
+                    << OPTIMIZACIÓN DE SHELL REMOTA >>
+==============================================================================
+
+[+]------------------------[ CONFIGURACIÓN INICIAL ]----------------------[+]
+
+   [*] OPERAR DESDE UNA BASH MEJORADA
+   |=================================
+   |  > Iniciar una sesión de script:
+   |    script /dev/null -c bash
+   |    python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+   [*] MANTENER ACCESO TRAS CTRL + C
+   |================================
+   |  > Pasos:
+   |    1. Presionar CTRL + Z
+   |    2. Ejecutar: stty raw -echo; fg
+   |    3. Ejecutar: reset xterm
+
+[+]------------------------[ PERSONALIZACIÓN DE SHELL ]-------------------[+]
+
+   [*] LIMPIAR Y CONFIGURAR LA SHELL DE LA VÍCTIMA
+   |==============================================
+   |  > Configurar terminal:
+   |    export TERM=xterm-256color
+   |
+   |  > Alias útiles:
+   |    alias ll='clear; ls -lsaht --color=auto'
+   |    alias ..='cd ..'
+   |
+   |  > Configurar PATH seguro:
+   |    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/tmp
+
+[+]------------------------[ AJUSTE DE TAMAÑO DE SHELL ]------------------[+]
+
+   [*] OBTENER TAMAÑO DE SHELL ATACANTE
+   |===================================
+   |  > Comando:
+   |    stty size
+   |  > Salida esperada:
+   |    46 190
+
+   [*] OBTENER TAMAÑO DE SHELL VÍCTIMA
+   |==================================
+   |  > Comando:
+   |    stty size
+   |  > Salida esperada:
+   |    24 80
+
+   [*] AJUSTAR TAMAÑO DE SHELL VÍCTIMA
+   |==================================
+   |  > Comando (usando dimensiones del atacante como ejemplo):
+   |    stty rows 46 columns 190
+
+==============================================================================
+                << FIN DE LAS UTILIDADES DE SHELL REMOTA >>
+==============================================================================

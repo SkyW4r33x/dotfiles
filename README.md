@@ -43,22 +43,13 @@ Un repositorio con mis configuraciones personalizadas para **ZSH**, **Neovim con
 ### ✅ Customización del listado de directorios
 La configuración del comando `ls` (mediante `lsd`) incluye colores y estilos mejorados para identificar rápidamente archivos y directorios importantes.
 
-![image](https://github.com/user-attachments/assets/9c609bb4-6df7-4150-922a-6e4af53699d8)
+![image](https://github.com/user-attachments/assets/62ecfcfc-c781-4084-8da0-95e1da908792)
 
 ## 💻 Nuevo prompt personalizado para Kali Linux
 
 El prompt incluye mejoras visuales y funcionales, diseñadas específicamente para entornos de análisis y desarrollo en **Kali Linux**.
 
-![image](https://github.com/user-attachments/assets/1fa193fc-da59-4ead-b39e-269407c8909c)
-
-### Resultado al ejecutar un comando con error:  
-El prompt muestra indicadores visuales claros cuando un comando falla, facilitando la detección de errores.  
-
-**Ejemplo con resultado de error:**
-
-![image](https://github.com/user-attachments/assets/c07d6ee9-9e78-4879-a503-63d67e256aae)
-
-![image](https://github.com/user-attachments/assets/eda2b37a-6a4c-4a65-be5c-b35a2ad68e43)
+![Nuevo prompt personalizado](https://github.com/user-attachments/assets/b240185f-ee43-402a-b000-8e22d8ad9d44)
 
 ---
 ### ✅ Comando `settarget`
@@ -70,11 +61,11 @@ settarget $IP_VICTIMA $NOMBRE_VICTIMA
 
 Configuración del objetivo con settarget:
 
-![image](https://github.com/user-attachments/assets/d3b1cbaf-d71b-444a-aefe-d80cce68c772)
+![Uso de `settarget`](https://github.com/user-attachments/assets/b7d66083-e7cd-41bc-bf6c-fb8ab09f5ab6)
 
 Resultado en el listado de directorios personalizado:
 
-![image](https://github.com/user-attachments/assets/078c49eb-d135-4714-9fe0-3ea6ca795a51)
+![image](https://github.com/user-attachments/assets/b613fb83-0ee4-4226-8617-c0324eae3ea2)
 
 ---
 ## 🛡️ Comandos referenciales para pentesting
@@ -87,7 +78,7 @@ El repositorio incluye un conjunto de scripts y comandos optimizados para pentes
 
 Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:  
 
-![image](https://github.com/user-attachments/assets/620294f2-1ebb-41b3-a3ba-cd02ba5bc9bc)
+![Referencias de pentesting](https://github.com/user-attachments/assets/02dcc37e-dc5e-425e-8de0-9fb1aee2ec45)
 
 ---
 
