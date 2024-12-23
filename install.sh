@@ -236,7 +236,7 @@ EOF
     echo -e "${YELLOW}  • ZSH:${RESET} Reinicia tu terminal para aplicar los cambios"
     echo -e "${YELLOW}  • Herramientas:${RESET} Prueba las nuevas herramientas: lsd, bat y terminator"
     echo -e "${YELLOW}  • FZF:${RESET} Usa Ctrl+R para búsqueda en el historial y Ctrl+T para búsqueda de archivos"
-    echo -e "${YELLOW}  • Actualización:${RESET} Usa 'updateAndclean' para actualizar y limpiar automáticamente el sistema"
+    echo -e "${YELLOW}  • Actualización:${RESET} Usa ${BLUE}${BOLD}updateAndclean${RESET} para actualizar y limpiar automáticamente el sistema"
     echo -e "${YELLOW}  • Docker:${RESET} Usa ${BLUE}${BOLD}dockerClean${RESET} para limpiar contenedores"
     echo -e "${YELLOW}  • Settarget:${RESET} Usa ${BLUE}${BOLD}settarget <ip> <nombre>${RESET} para establecer el objetivo"
     echo -e "\n${CYAN}${BOLD}[+] Utilidades Pentesting:${RESET}"
