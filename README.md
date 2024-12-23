@@ -21,7 +21,6 @@ Un repositorio con mis configuraciones personalizadas para **ZSH**, **Neovim con
    ```bash
    ./install.sh
    ```
-4. Sigue las instrucciones en pantalla para personalizar las configuraciones.
 ---
 ## 🎨 Personalizaciones incluidas
 ### ✅ Customización del listado de directorios
