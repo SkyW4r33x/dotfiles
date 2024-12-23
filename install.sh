@@ -248,5 +248,5 @@ EOF
     echo -e "\n${GREEN}${BOLD}.:: ¡Disfruta de tu nuevo entorno personalizado! ::.${RESET}\n"
 }
 
-# Ejecución del script
+# iniciar script
 main
