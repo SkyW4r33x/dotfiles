@@ -206,7 +206,7 @@ EOF
     install_neovim true || { log_error "Error al instalar Neovim para root"; exit 1; }
 
     log_info "Instalando herramientas adicionales"
-    sudo apt update && sudo apt install -y lsd bat terminator || { log_error "Error al instalar herramientas adicionales"; exit 1; }
+    sudo apt update && sudo apt install -y lsd bat terminator keepassxc || { log_error "Error al instalar herramientas adicionales"; exit 1; }
     log_success "Herramientas adicionales instaladas"
 
     log_info "Instalando fuente JetBrainsMono"
@@ -234,7 +234,7 @@ EOF
     echo -e "\n${CYAN}${BOLD}[+] Recomendaciones y características:${RESET}"
     echo -e "${YELLOW}  • Neovim:${RESET} Ejecuta ${BLUE}${BOLD}nvim${RESET} para comenzar la personalizacion con ${BLUE}${BOLD}NvChad${RESET}"
     echo -e "${YELLOW}  • ZSH:${RESET} Reinicia tu terminal para aplicar los cambios"
-    echo -e "${YELLOW}  • Herramientas:${RESET} Prueba las nuevas herramientas: lsd, bat y terminator"
+    echo -e "${YELLOW}  • Herramientas:${RESET} Prueba las nuevas herramientas: lsd, bat y terminator keepassxc"
     echo -e "${YELLOW}  • FZF:${RESET} Usa Ctrl+R para búsqueda en el historial y Ctrl+T para búsqueda de archivos"
     echo -e "${YELLOW}  • Actualización:${RESET} Usa ${BLUE}${BOLD}updateAndclean${RESET} para actualizar y limpiar automáticamente el sistema"
     echo -e "${YELLOW}  • Docker:${RESET} Usa ${BLUE}${BOLD}dockerClean${RESET} para limpiar contenedores"
