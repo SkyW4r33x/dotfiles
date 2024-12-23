@@ -27,20 +27,20 @@ Un repositorio con mis configuraciones personalizadas para **ZSH**, **Neovim con
 ### ✅ Customización del listado de directorios
 La configuración del comando `ls` (mediante `lsd`) incluye colores y estilos mejorados para identificar rápidamente archivos y directorios importantes.
 
-![image](https://github.com/user-attachments/assets/c8162ca6-0933-4626-983b-469f15e2f2e2)
+![image](https://github.com/user-attachments/assets/acf493a6-47cb-4f7d-a31d-71edef54d7be)
 
 ## 💻 Nuevo prompt personalizado para Kali Linux
 El prompt incluye mejoras visuales y funcionales, diseñadas específicamente para entornos de análisis y desarrollo en **Kali Linux**.
 
-![image](https://github.com/user-attachments/assets/b079dda3-a54a-462f-8354-f8d5604564ad)
+![image](https://github.com/user-attachments/assets/2c383319-a4f9-4492-bebc-8d463ca5df8e)
 
 ### Resultado al ejecutar un comando con error:  
 El prompt muestra indicadores visuales claros cuando un comando falla, facilitando la detección de errores.  
 **Ejemplo con resultado de error:**
 
-![image](https://github.com/user-attachments/assets/9bbaa387-8a6c-431b-b3a2-b21f639be0e0)
+![image](https://github.com/user-attachments/assets/a38e5fbd-4271-45db-949f-60037cbb6a9a)
 
-![image](https://github.com/user-attachments/assets/24028713-0b53-43f2-8850-3da1553f09e0)
+![image](https://github.com/user-attachments/assets/aa41265f-05ca-41c3-b990-6577e78d5a93)
 
 ---
 ### ✅ Comando `settarget`
@@ -50,11 +50,11 @@ settarget $IP_VICTIMA $NOMBRE_VICTIMA
 ```
 Configuración del objetivo con settarget:
 
-![image](https://github.com/user-attachments/assets/a04d726e-7a71-49ce-9d2d-0b7071eb5c78)
+![image](https://github.com/user-attachments/assets/4a1aa754-7d59-42f8-8f78-a74226bd8f2e)
 
 Resultado en el listado de directorios personalizado:
 
-![image](https://github.com/user-attachments/assets/98015439-22e3-4a62-9b08-a190deb17646)
+![image](https://github.com/user-attachments/assets/a5ed34d3-00ae-460c-867f-2736af8d117d)
 
 ---
 ## 🛡️ Comandos referenciales para pentesting
@@ -64,7 +64,7 @@ El repositorio incluye un conjunto de scripts y comandos optimizados para pentes
 - **`vuln`**: Lista y explica vulnerabilidades comunes.
 Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:
 
-![image](https://github.com/user-attachments/assets/cf7658b4-f7c2-4a2f-a06f-a56bd3701363)
+![image](https://github.com/user-attachments/assets/d7e10174-494a-4cd6-aac2-6b85aa3acff9)
 
 ---
 ## ⚙️ Herramientas adicionales incluidas
