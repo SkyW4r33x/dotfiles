@@ -43,7 +43,7 @@ Un repositorio con mis configuraciones personalizadas para **ZSH**, **Neovim con
 ### ✅ Customización del listado de directorios
 La configuración del comando `ls` (mediante `lsd`) incluye colores y estilos mejorados para identificar rápidamente archivos y directorios importantes.
 
-![image](https://github.com/user-attachments/assets/be7df8c1-50f2-422b-9be4-650a6afdea80)
+![image](https://github.com/user-attachments/assets/9c609bb4-6df7-4150-922a-6e4af53699d8)
 
 ## 💻 Nuevo prompt personalizado para Kali Linux
 
