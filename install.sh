@@ -24,7 +24,7 @@ CONFIG_DIR="$HOME/.config"
 
 # Funciones de utilidad
 log_step() {
-    echo -e "\n${YELLOW}${BOLD}▶ ${RESET}$1"
+    echo -e "\n${YELLOW}${BOLD}▶ $1${RESET}"
 }
 
 log_info() {
