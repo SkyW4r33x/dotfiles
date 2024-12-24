@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # =========================================
 # Autor: Jordan Edilberto Cueva Mendoza
-# Version 1.7
+# Version 1.8
 # =========================================
 
 set -e
@@ -24,59 +24,82 @@ CONFIG_DIR="$HOME/.config"
 
 # Funciones de utilidad
 log_step() {
-    echo -e "\n${YELLOW}${BOLD}▶ $1${RESET}"
+    echo -e "\n${YELLOW}${BOLD}▶ ${RESET}$1"
 }
 
 log_info() {
-    echo -e "${BLUE}  ℹ $1${RESET}"
+    echo -e "${BLUE}  [ℹ] ${RESET}$1"
 }
 
 log_success() {
-    echo -e "${GREEN}  ✔ $1${RESET}"
+    echo -e "${GREEN}  [✔] ${RESET}$1"
 }
 
 log_error() {
-    echo -e "${RED}  ✖ $1${RESET}" >&2
+    echo -e "${RED}  [✖] $1${RESET}" >&2
+}
+
+nvim_install(){
+  # Placeholder for nvim_install function
+  log_info "Placeholder for nvim_install function"
 }
 
 show_banner() {
     clear
     echo -e "${CYAN}${BOLD}"
     echo "  _____   ____ _______ ______ _____ _      ______  _____           "
-    echo " |  __ \\ / __ \\\__   __|  ____|_   _| |    |  ____|/ ____|       "
+    echo " |  __ \\ / __ \\__   __|  ____|_   _| |    |  ____|/ ____|       "
     echo " | |  | | |  | | | |  | |__    | | | |    | |__  | (___            "
-    echo " | |  | | |  | | | |  |  __|   | | | |    |  __|  \\\___ \\        "
-    echo " | |__| | |__| | | |  | |     _| |_| |____| |____ ____)  |         "
-    echo " |_____/ \\\____/  |_|  |_|    |_____|______|______|_____/         "
+    echo " | |  | | |  | | | |  |  __|   | | | |    |  __|  \\___ \\        "
+    echo " | |__| | |__| | | |  | |     _| |_| |____| |____ ____) |         "
+    echo " |_____/ \\____/  |_|  |_|    |_____|______|______|_____/         "
     echo "                                                                   "
     echo -e "${RESET}${GREEN}                By:Jordan aka SkyW4r33x         "
     echo -e "${RESET}"
 }
 
+aliases() {
+  clear
+  log_info "Integrando aliases al ${YELLOW}${BOLD}.zshrc${RESET}.\n"
+  
+  # VARIABLES
+  zshrc_ub="/home/${CURRENT_USER}/.zshrc"
+  comentario='# --------------------------- Aliases pentester ---------------------------'
+  utilscomon="alias utilscomon='clear && cat /home/${CURRENT_USER}/referencestuff/utilscommon | sed -e \"s/^#\$\$.*\$\$\$/\$(tput setaf 220)&\$(tput sgr0)/\" -e \"s/\[!\].*/\$(tput setaf 10)&\$(tput sgr0)/\" -e \"s/.*/\$(tput setaf 1)&\$(tput sgr0)/\"'"
+  utilscommon1="alias utilscomon1='clear && cat /home/${CURRENT_USER}/referencestuff/utilscommon1 | sed -e \"s/^#\$\$.*\$\$\$/\$(tput setaf 220)&\$(tput sgr0)/\" -e \"s/\[!\].*/\$(tput setaf 10)&\$(tput sgr0)/\" -e \"s/.*/\$(tput setaf 1)&\$(tput sgr0)/\"'"
+  treatty="alias treatty='clear && cat /home/${CURRENT_USER}/referencestuff/treatmentty | sed \"s/^/\$(tput setaf 1)/\" | sed \"s/\$/\$(tput sgr0)/\"'"
+  vuln="alias vuln='clear && cat /home/${CURRENT_USER}/referencestuff/vulnsAttack | sed -e \"s/^#\$\$.*\$\$\$/\$(tput setaf 220)&\$(tput sgr0)/\" -e \"s/\[!\].*/\$(tput setaf 10)&\$(tput sgr0)/\" -e \"s/.*/\$(tput setaf 1)&\$(tput sgr0)/\"'"
+  user="alias ${CURRENT_USER}='su ${CURRENT_USER}'"
+  # ALIASES A INTEGRAR  
+  aliases=(
+    "$comentario"
+    "$utilscomon"
+    "$utilscommon1"
+    "$treatty"
+    "$vuln"
+    "$user"
+  )
+  # extrae nombre de los aliases
+  extraerAliases() {
+    echo "$1" | awk '{print $2}' | awk -F '=' '{print $1}'
+  }
+  # agragar aliases
+  for alias in "${aliases[@]}"; do 
+    name_alias=$(extraerAliases "$alias")
+    if ! grep -q "$alias" "$zshrc_ub"; then
+      echo "$alias" >> "$zshrc_ub"
+      log_success "Alias agregado: ${GREEN}${BOLD}$name_alias${RESET}"
+      sleep 1
+    else
+      log_error "El alias ya existe: ${RED}${BOLD}$name_alias${RESET}"
+    fi
+  done
+  log_step "Proceso completado correctamente. a tu ${zshrc_ub}"
+}
+
 ask_for_password() {
     log_step "Solicitando privilegios de superusuario"
     sudo -v || { log_error "No se pudo obtener privilegios de superusuario"; exit 1; }
-}
-
-check_dependencies() {
-    local deps=("git" "unzip" "curl")
-    for dep in "${deps[@]}"; do
-        if ! command -v "$dep" &> /dev/null; then
-            log_error "Dependencia no encontrada: $dep. Por favor, instálala e intenta de nuevo."
-            exit 1
-        fi
-    done
-    log_success "Todas las dependencias están instaladas."
-}
-
-check_disk_space() {
-    local required_space=1000000  # 1GB en KB
-    local available_space=$(df -k "$HOME" | awk '{print $4}' | tail -n 1)
-    if [ "$available_space" -lt "$required_space" ]; then
-        log_error "No hay suficiente espacio en disco. Se requieren al menos 1GB."
-        exit 1
-    fi
-    log_success "Espacio en disco suficiente."
 }
 
 # Funciones de instalación
@@ -120,16 +143,34 @@ install_for_user() {
     local sudo_prefix=""
     [ "$is_root" = true ] && sudo_prefix="sudo -i"
 
-    $sudo_prefix bash << EOF
-    $(declare -f log_step)
-    $(declare -f log_info)
-    $(declare -f log_error)
-    $(declare -f log_success)
+    $sudo_prefix bash << 'EOFUSER'
+    BOLD='\033[1m'
+    RESET='\033[0m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    BLUE='\033[0;34m'
+    RED='\033[0;31m'
+
+    log_step() {
+        echo -e "\n${YELLOW}${BOLD}▶ $1${RESET}"
+    }
+
+    log_info() {
+        echo -e "${BLUE}  [ℹ] ${RESET}$1"
+    }
+
+    log_success() {
+        echo -e "${GREEN}  [✔] ${RESET}$1"
+    }
+
+    log_error() {
+        echo -e "${RED}  [✖] $1${RESET}" >&2
+    }
     
-    log_step "Instalando para $user"
+    log_step "Instalando para ${USER}"
     
     log_info "Instalando fzf"
-    if [ "$is_root" = true ]; then
+    if [ "${USER}" = "root" ]; then
         git clone --depth 1 https://github.com/junegunn/fzf.git /root/.fzf || { log_error "Error al clonar fzf para root"; exit 1; }
         /root/.fzf/install --all || { log_error "Error al instalar fzf para root"; exit 1; }
     else
@@ -137,7 +178,7 @@ install_for_user() {
         ~/.fzf/install --all || { log_error "Error al instalar fzf para usuario"; exit 1; }
     fi
     log_success "fzf instalado"
-EOF
+EOFUSER
 }
 
 # Función principal
@@ -146,8 +187,6 @@ main() {
     [ "$EUID" -eq 0 ] && { log_error "No ejecutes este script como root"; exit 1; }
 
     show_banner
-    check_dependencies
-    check_disk_space
 
     log_step "Iniciando instalación para $CURRENT_USER"
 
@@ -225,9 +264,11 @@ EOF
         log_error "No se encontró el directorio sudo-plugin"
     fi
     
-    sleep 4
-    
+    sleep 1.5
     clear
+    aliases
+    clear
+    sleep 1.5
 
     echo -e "\n${GREEN}${BOLD}.:: Instalación completada con éxito ::.${RESET}"
 
