@@ -277,8 +277,8 @@ alias HTB='clear && cd /root/machines_vuln/HTB'
 alias PMJ='clear && cd /root/machines_vuln/PMJ'
 alias DKL='clear && cd /root/machines_vuln/DockerLabs'
 alias extractPorts='/usr/bin/extractPorts.py'
-alias -g -- -h='-h 2>&1 | batcat --theme=base16 --language=help --style=numbers,changes,header'
-alias -g -- -help='--help 2>&1 | batcat --theme=base16 --language=help --style=numbers,changes,header'
+alias -g -- --help='--help 2>&1 | cat --theme=ansi --language=help --style=plain'
+alias -g -- -h='-h 2>&1 | cat --theme=ansi --language=help --style=plain'
 
 # ---------------------------------------- Custom LSD ---------------------------------------- #
 # Archivo para almacenar el estado del mensaje
