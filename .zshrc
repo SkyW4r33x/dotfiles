@@ -263,7 +263,7 @@ fi
 alias tree='lsd --tree '
 command -v colorls > /dev/null && alias ls='colorls --sd --gs' && \
         alias tree='colorls --tree '
-alias cat='batcat --theme=base16 --style=numbers,changes,header --pager=never'
+alias cat='batcat --theme=ansi --style=numbers,changes,header --pager=never'
 alias neofetch='neofetch | lolcat'
 alias vim='/opt/nvim-linux64/bin/nvim'
 alias rmh='rmk ~/.zsh_history'
