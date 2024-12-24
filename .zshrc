@@ -254,7 +254,6 @@ if [ -x /usr/bin/dircolors ]; then
     zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 fi
 
-
 # some more ls aliases
 ### LS & TREE
 #alias ll='ls -l'
@@ -264,16 +263,12 @@ fi
 alias tree='lsd --tree '
 command -v colorls > /dev/null && alias ls='colorls --sd --gs' && \
         alias tree='colorls --tree '
-alias cat='batcat --theme=ansi --style=numbers,changes,header --pager=never'
+alias cat='batcat --theme=base16 --style=numbers,changes,header --pager=never'
 alias neofetch='neofetch | lolcat'
 alias vim='/opt/nvim-linux64/bin/nvim'
 alias rmh='rmk ~/.zsh_history'
 alias fucking='sudo su'
 alias _='sudo su'
-alias utilscomon='clear && cat /home/skyw4r33x/referencestuff/utilscommon | sed -e "s/^#$$.*$$$/$(tput setaf 220)&$(tput sgr0)/" -e "s/\[!\].*/$(tput setaf 10)&$(tput sgr0)/" -e "s/.*/$(tput setaf 1)&$(tput sgr0)/"'
-alias utilscomon1='clear && cat /home/skyw4r33x/referencestuff/utilscommon1 | sed -e "s/^#$$.*$$$/$(tput setaf 220)&$(tput sgr0)/" -e "s/\[!\].*/$(tput setaf 10)&$(tput sgr0)/" -e "s/.*/$(tput setaf 1)&$(tput sgr0)/"'
-alias treatty='clear && cat /home/skyw4r33x/referencestuff/treatmentty | sed "s/^/$(tput setaf 1)/" | sed "s/$/$(tput sgr0)/"'
-alias vuln='clear && cat /home/skyw4r33x/referencestuff/vulnsAttack | sed -e "s/^#$$.*$$$/$(tput setaf 220)&$(tput sgr0)/" -e "s/\[!\].*/$(tput setaf 10)&$(tput sgr0)/" -e "s/.*/$(tput setaf 1)&$(tput sgr0)/"'
 alias cp='cp -rfv'
 alias rm='rm -rf'
 alias mv='mv -iv'
@@ -281,48 +276,62 @@ alias vulnhub='clear && cd /root/machines_vuln/vulnhub'
 alias HTB='clear && cd /root/machines_vuln/HTB'
 alias PMJ='clear && cd /root/machines_vuln/PMJ'
 alias DKL='clear && cd /root/machines_vuln/DockerLabs'
-alias skyw4r33x='su skyw4r33x'
 alias extractPorts='/usr/bin/extractPorts.py'
+alias -g -- -h='-h 2>&1 | batcat --theme=base16 --language=help --style=numbers,changes,header'
+alias -g -- -help='--help 2>&1 | batcat --theme=base16 --language=help --style=numbers,changes,header'
 
 # ---------------------------------------- Custom LSD ---------------------------------------- #
 # Archivo para almacenar el estado del mensaje
 MESSAGE_STATE_FILE="${HOME}/.lsd_message_state"
+
+#directorio del usuario no root
+get_user_home() {
+  if [ "$(id -u)" -eq 0 ]; then
+    echo "$(awk -F: '$3 >= 1000 && $3 != 65534 {print $6; exit}' /etc/passwd)"
+  else
+    echo "$HOME"
+  fi
+}
+
 function _base_ls() {
   local command=$1
   clear
-  # Colores y efectos de texto
   local reset=$'\e[0m'
   local bold=$'\e[1m'
   local bright_red=$'\e[1;31m'
   local bright_cyan=$'\e[1;36m'
-  local bright_magenta=$'\e[1;35m'
   local bright_yellow=$'\e[1;33m'
   local bright_blue=$'\e[94m'
   local green=$'\e[38;2;25;131;136m'
   local cursiva=$'\e[3m'
   local blink=$'\e[5m'
-  # Función para leer la IP de la víctima
+
+  #IP de la víctima
   get_victim_ip() {
-    local ip_file="/home/skyw4r33x/.config/bin/target/target.txt"
+    local user_home=$(get_user_home)
+    local ip_file="${user_home}/.config/bin/target/target.txt"
     if [ -f "$ip_file" ] && [ -s "$ip_file" ]; then
       awk '{print $1}' "$ip_file" | grep -v '^$' || echo "Unknown"
     else
       echo "Unknown"
     fi
   }
-  # Función para leer el nombre de la víctima
+
+  # nombre de la víctima
   get_victim_name() {
-    local ip_file="/home/skyw4r33x/.config/bin/target/target.txt"
+    local user_home=$(get_user_home)
+    local ip_file="${user_home}/.config/bin/target/target.txt"
     if [ -f "$ip_file" ] && [ -s "$ip_file" ]; then
       awk '{print $2}' "$ip_file" | grep -v '^$' || echo "Anonymous"
     else
       echo "Anonymous"
     fi
   }
-  # Obtener IP y nombre de la víctima
+
+  # IP y nombre de la víctima
   local victim_ip=$(get_victim_ip)
   local victim_name=$(get_victim_name)
-  # Función para alternar entre mensajes
+
   toggle_message() {
     if [ ! -f "$MESSAGE_STATE_FILE" ] || [ "$(cat "$MESSAGE_STATE_FILE")" = "L3VIATH4N" ]; then
       echo "H4PPY H4CK1NG" > "$MESSAGE_STATE_FILE"
@@ -332,33 +341,36 @@ function _base_ls() {
       echo "${bold}${bright_yellow}  L3VIATH4N${reset}"
     fi
   }
-  # System Information
-  print
-  print -P "${bold}${bright_blue}╔═════════════════════════════════════════[ INFORMACION DEL SISTEMA ]═══════════════════════════════════════╗${reset}"
-  print -P "${bold}${bright_blue}                                                                                                            ${reset}"
-  print -P "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Ubicación${reset}......: ${cursiva}${green} $(pwd)${reset}"
-  print -P "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Fecha/Hora${reset}.....: ${cursiva}${green}󰸗 $(date '+%Y-%m-%d')${reset}\t\t│\t${bright_yellow}   [${bright_red}${blink}!${reset}${bright_yellow}]${reset}${bold} Máquina Víctima${reset}.: ${bright_red}${cursiva}${victim_name}${reset}"
-  print -P "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} IP Atacante${reset}....: ${cursiva}${green}󰩠 $(hostname -I | awk '{print $1}')${reset}\t\t│\t${bright_yellow}   [${bright_red}${blink}!${reset}${bright_yellow}]${reset}${bold} IP Víctima${reset}......: ${bright_red}${cursiva}󰩠 ${victim_ip}${reset}"
-  print -P "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Usuario${reset}........: ${cursiva}${green} $(whoami)${reset}"
-  print -P "${bold}${bright_blue}                                                  $(toggle_message)                                            ${reset}"
-  print -P "${bold}${bright_blue}╠═════════════════════════════════════════[ CONTENIDO DEL DIRECTORIO ]══════════════════════════════════════╣${reset}"
-  print
-  # Comando ejecutado
-  command lsd $command --color=always --icon=auto
-  print
-  # Separador inferior
-  print -P "${bold}${bright_blue}╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝${reset}"
+
+  echo
+  echo -e "${bold}${bright_blue}╔═════════════════════════════════════════[ INFORMACION DEL SISTEMA ]═══════════════════════════════════════╗${reset}"
+  echo -e "${bold}${bright_blue}                                                                                                            ${reset}"
+  echo -e "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Ubicación${reset}......: ${cursiva}${green} $(pwd)${reset}"
+  echo -e "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Fecha/Hora${reset}.....: ${cursiva}${green}󰸗 $(date '+%Y-%m-%d')${reset}\t\t│\t${bright_yellow}   [${bright_red}${blink}!${reset}${bright_yellow}]${reset}${bold} Máquina Víctima${reset}.: ${bright_red}${cursiva}${victim_name}${reset}"
+  echo -e "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} IP Atacante${reset}....: ${cursiva}${green}󰩠 $(hostname -I | awk '{print $1}')${reset}\t\t│\t${bright_yellow}   [${bright_red}${blink}!${reset}${bright_yellow}]${reset}${bold} IP Víctima${reset}......: ${bright_red}${cursiva}󰩠 ${victim_ip}${reset}"
+  echo -e "${bold}${bright_blue} \t${bright_cyan}  [${bright_yellow}✓${reset}${bright_cyan}]${reset}${bold} Usuario${reset}........: ${cursiva}${green} $(whoami)${reset}"
+  echo -e "${bold}${bright_blue}                                                  $(toggle_message)                                            ${reset}"
+  echo -e "${bold}${bright_blue}╠═════════════════════════════════════════[ CONTENIDO DEL DIRECTORIO ]══════════════════════════════════════╣${reset}"
+  echo
+
+  lsd $command --color=always --icon=auto
+
+  echo
+  echo -e "${bold}${bright_blue}╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝${reset}"
 }
-# Funciones específicas para cada comando
+
 function ls() {
   _base_ls ""
 }
+
 function la() {
   _base_ls "-lA"
 }
+
 function l() {
   _base_ls "-l"
 }
+
 function ll() {
   _base_ls "-l"
 }
@@ -425,9 +437,8 @@ source /usr/share/sudo-plugin/sudo.plugin.zsh
 function mkt(){
         mkdir {nmap,content,exploits}
 }
-# Limpieza de contenedores Docker
+
 function dockerClean() {
-  # Colores y estilos
   BOLD='\033[1m'
   RESET='\033[0m'
   GREEN='\033[0;32m'
@@ -436,9 +447,8 @@ function dockerClean() {
   RED='\033[0;31m'
   CYAN='\033[0;36m'
 
-  # Limpiar pantalla
   clear
-  # Función auxiliar para ejecutar comandos
+
   ejecutar_comando() {
     echo -e "${CYAN}${BOLD}Ejecutando:${RESET} $1"
     if eval "$1" &>/dev/null; then
@@ -505,5 +515,3 @@ if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     # change suggestion color
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#363636'
 fi
-
-
