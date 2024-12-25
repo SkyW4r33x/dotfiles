@@ -7,7 +7,7 @@
 
 set -e
 
-# Definición de colores
+# colores
 BOLD='\033[1m'
 RESET='\033[0m'
 GREEN='\033[0;32m'
@@ -154,7 +154,7 @@ install_neovim() {
                 sudo mv "$target_dir" "$target_dir.bak" || { log_error "Error al hacer backup de la configuración existente"; return 1; }
             fi
             
-            # Usar sudo para crear el directorio y clonar el repositorio
+            # usar sudo para crear el directorio y clonar el repositorio
             sudo mkdir -p "$target_dir"
             sudo git clone https://github.com/NvChad/starter "$target_dir" || {
                 log_error "Error al clonar el repositorio de NvChad para root"; return 1;
@@ -163,7 +163,6 @@ install_neovim() {
         else
             log_info "Configuración básica de Neovim para usuario normal"
             mkdir -p "$target_dir"
-            # Aquí puedes agregar configuraciones básicas de Neovim si lo deseas
             log_success "Configuración básica de Neovim completada para usuario normal"
         fi
     else
