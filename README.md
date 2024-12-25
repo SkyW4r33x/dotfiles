@@ -81,7 +81,7 @@ Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:
 - Copiarlo directo a la clipboard para mayor rapidez.
 ## 📦 Cómo Usarlo:
 ```bash
-   extracPorts.py resultados_nmap
+extracPorts resultados_nmap
 ```
 ## 🖼️ Vista Previa:
 ![image](https://github.com/user-attachments/assets/8a5cabd3-9c77-4610-adad-5f251c4f2e0f)
