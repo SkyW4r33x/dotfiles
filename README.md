@@ -72,4 +72,18 @@ Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:
 - **`lsd`**: Reemplazo moderno de `ls` con soporte para iconos y colores.
 - **`bat`**: Alternativa mejorada al comando `cat`, con resaltado de sintaxis.
 - **`terminator`**: Emulador de terminal avanzado para entornos multitarea.
+  
 ---
+## 🚀 ¡Nueva Actualización Emocionante!
+**`extracPorts`**, inspirado en S4vitar y desarrollado en Python, ahora te permite:  
+- Extraer **puertos abiertos** automáticamente desde la salida de Nmap.  
+- Generar el comando para escanear **versiones y servicios**.  
+- Copiarlo directo a la clipboard para mayor rapidez.
+## 📦 Cómo Usarlo:
+```bash
+   extracPorts.py resultados_nmap
+```
+## Vista Previa:
+![image](https://github.com/user-attachments/assets/8a5cabd3-9c77-4610-adad-5f251c4f2e0f)
+
+
