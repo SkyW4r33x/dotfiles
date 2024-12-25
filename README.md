@@ -83,7 +83,7 @@ Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:
 ```bash
    extracPorts.py resultados_nmap
 ```
-## Vista Previa:
+## 🖼️ Vista Previa:
 ![image](https://github.com/user-attachments/assets/8a5cabd3-9c77-4610-adad-5f251c4f2e0f)
 
 
