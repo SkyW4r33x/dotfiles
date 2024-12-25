@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # =========================================
 # Autor: Jordan Edilberto Cueva Mendoza
-# Version 1.8
+# Version 1.9
 # =========================================
 
 set -e
@@ -23,39 +23,66 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 
 # Funciones de utilidad
+print_message() {
+    local color=$1
+    local prefix=$2
+    local message=$3
+    echo -e "${color}${BOLD}${prefix} ${RESET}${message}"
+    sleep 0.4
+}
+
+title() {
+    print_message "$BLUE" "[+]" "$1"
+}
+
+text() {
+    print_message "$YELLOW" "     [•]" "$1"
+}
+
+update_version_title() {
+    print_message "$GREEN" "[!]" "$1"
+}
+
+update_version_text() {
+    print_message "$CYAN" "     [✔]" "$1"
+}
+
 log_step() {
-    echo -e "\n${YELLOW}${BOLD}▶ $1${RESET}"
+    clear
+    echo -e "\n${YELLOW}${BOLD}▶ ${RESET}$1"
+    sleep 1.5
 }
 
 log_info() {
-    echo -e "${BLUE}  [ℹ] ${RESET}$1"
+    echo -e "${BLUE}${BOLD}  [ℹ] ${RESET}$1"
+    sleep 1.2
 }
 
 log_success() {
-    echo -e "${GREEN}  [✔] ${RESET}$1"
+    echo -e "${GREEN}${BOLD}  [✔] ${RESET}$1"
+    sleep 1.2
 }
 
 log_error() {
-    echo -e "${RED}  [✖] $1${RESET}" >&2
-}
-
-nvim_install(){
-  # Placeholder for nvim_install function
-  log_info "Placeholder for nvim_install function"
+    echo -e "${RED}${BOLD}  [✖] $1${RESET}" >&2
 }
 
 show_banner() {
     clear
-    echo -e "${CYAN}${BOLD}"
-    echo "  _____   ____ _______ ______ _____ _      ______  _____           "
-    echo " |  __ \\ / __ \\__   __|  ____|_   _| |    |  ____|/ ____|       "
-    echo " | |  | | |  | | | |  | |__    | | | |    | |__  | (___            "
-    echo " | |  | | |  | | | |  |  __|   | | | |    |  __|  \\___ \\        "
-    echo " | |__| | |__| | | |  | |     _| |_| |____| |____ ____) |         "
-    echo " |_____/ \\____/  |_|  |_|    |_____|______|______|_____/         "
-    echo "                                                                   "
-    echo -e "${RESET}${GREEN}                By:Jordan aka SkyW4r33x         "
+    echo -e "${YELLOW}${BOLD}"
+    echo "██████╗  ██████╗ ████████╗███████╗██╗██╗     ███████╗███████╗"
+    echo "██╔══██╗██╔═══██╗╚══██╔══╝██╔════╝██║██║     ██╔════╝██╔════╝"
+    echo "██║  ██║██║   ██║   ██║   █████╗  ██║██║     █████╗  ███████╗"
+    echo "██║  ██║██║   ██║   ██║   ██╔══╝  ██║██║     ██╔══╝  ╚════██║"
+    echo "██████╔╝╚██████╔╝   ██║   ██║     ██║███████╗███████╗███████║"
+    echo "╚═════╝  ╚═════╝    ╚═╝   ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝"
     echo -e "${RESET}"
+    echo
+    echo -e "\t${BLUE}${BOLD}Realizado por:${RESET} Jordan (aka SkyW4r33x)"
+    echo -e "\t${BLUE}${BOLD}Versión:${RESET}       1.9"
+    echo -e "\t${BLUE}${BOLD}Repositorio:${RESET}   https://github.com/SkyW4r33x"
+    echo
+    sleep 4
 }
 
 aliases() {
@@ -89,20 +116,18 @@ aliases() {
     if ! grep -q "$alias" "$zshrc_ub"; then
       echo "$alias" >> "$zshrc_ub"
       log_success "Alias agregado: ${GREEN}${BOLD}$name_alias${RESET}"
-      sleep 1
     else
       log_error "El alias ya existe: ${RED}${BOLD}$name_alias${RESET}"
     fi
   done
-  log_step "Proceso completado correctamente. a tu ${zshrc_ub}"
+  log_step "${BOLD}Aliases de arsenal de comandos integrados al .zshrc correctamente. ${zshrc_ub}${RESET}"
 }
 
 ask_for_password() {
-    log_step "Solicitando privilegios de superusuario"
+    log_step "${BOLD}Solicitando privilegios de ${RED}${BOLD}superusuario${RESET}"
     sudo -v || { log_error "No se pudo obtener privilegios de superusuario"; exit 1; }
 }
 
-# Funciones de instalación
 install_neovim() {
     local is_root=$1
     local target_dir
@@ -122,15 +147,25 @@ install_neovim() {
    
         log_success "Neovim v0.10.0 instalado correctamente"
 
-        log_info "Instalando NvChad en $target_dir"
-        if [ -d "$target_dir" ]; then
-            log_info "Respaldo de configuración existente en $target_dir.bak"
-            sudo mv "$target_dir" "$target_dir.bak" || { log_error "Error al hacer backup de la configuración existente"; return 1; }
+        if [ "$is_root" = true ]; then
+            log_info "Instalando NvChad en $target_dir"
+            if [ -d "$target_dir" ]; then
+                log_info "Respaldo de configuración existente en $target_dir.bak"
+                sudo mv "$target_dir" "$target_dir.bak" || { log_error "Error al hacer backup de la configuración existente"; return 1; }
+            fi
+            
+            # Usar sudo para crear el directorio y clonar el repositorio
+            sudo mkdir -p "$target_dir"
+            sudo git clone https://github.com/NvChad/starter "$target_dir" || {
+                log_error "Error al clonar el repositorio de NvChad para root"; return 1;
+            }
+            log_success "NvChad instalado en $target_dir"
+        else
+            log_info "Configuración básica de Neovim para usuario normal"
+            mkdir -p "$target_dir"
+            # Aquí puedes agregar configuraciones básicas de Neovim si lo deseas
+            log_success "Configuración básica de Neovim completada para usuario normal"
         fi
-        sudo git clone https://github.com/NvChad/starter "$target_dir" || {
-            log_error "Error al clonar el repositorio de NvChad"; return 1;
-        }
-        log_success "NvChad instalado en $target_dir"
     else
         log_error "No se encontró nvim-linux64.tar.gz en el directorio del script"
         return 1
@@ -152,22 +187,26 @@ install_for_user() {
     RED='\033[0;31m'
 
     log_step() {
-        echo -e "\n${YELLOW}${BOLD}▶ $1${RESET}"
+        clear
+        echo -e "\n${YELLOW}${BOLD}▶ ${RESET}$1"
+        sleep 1.5
     }
 
     log_info() {
-        echo -e "${BLUE}  [ℹ] ${RESET}$1"
+        echo -e "${BLUE}${BOLD}  [ℹ] ${RESET}$1"
+	sleep 1.2
     }
 
-    log_success() {
-        echo -e "${GREEN}  [✔] ${RESET}$1"
+    log_success(){
+        echo -e "${GREEN}${BOLD}  [✔] ${RESET}$1"
+	sleep 1.2
     }
 
     log_error() {
-        echo -e "${RED}  [✖] $1${RESET}" >&2
+        echo -e "${RED}${BOLD}  [✖] $1${RESET}" >&2
     }
     
-    log_step "Instalando para ${USER}"
+    log_step "${BOLD}Instalando para${RESET} ${RED}${BOLD}${USER}${RESET}"
     
     log_info "Instalando fzf"
     if [ "${USER}" = "root" ]; then
@@ -181,14 +220,43 @@ install_for_user() {
 EOFUSER
 }
 
+install_extract_ports() {
+    log_step "${BOLD}Iniciando la instalación de extractPorts modificado${RESET}"
+    
+    log_info "Haciendo el script ejecutable..."
+    chmod +x "$SCRIPT_DIR/extractPorts.py" || {
+        log_error "No se pudo hacer ejecutable el archivo extractPorts.py"
+        return 1
+    }
+
+    log_info "Copiando extractPorts.py a /usr/bin/..."
+    sudo cp "$SCRIPT_DIR/extractPorts.py" "/usr/bin/extractPorts.py" || {
+        log_error "No se pudo copiar extractPorts.py a /usr/bin/"
+        return 1
+    }
+
+    sudo chmod +x "/usr/bin/extractPorts.py" || {
+        log_error "No se pudo hacer ejecutable el archivo en /usr/bin/"
+        return 1
+    }
+
+    if command -v extractPorts.py &> /dev/null; then
+        log_success "extractPorts.py se ha instalado correctamente y está disponible en el PATH"
+        sleep 2
+    else
+        log_error "La instalación de extractPorts.py ha fallado o no está en el PATH"
+        return 1
+    fi
+
+}
+
 # Función principal
 main() {
-
     [ "$EUID" -eq 0 ] && { log_error "No ejecutes este script como root"; exit 1; }
 
     show_banner
 
-    log_step "Iniciando instalación para $CURRENT_USER"
+    log_step "${BOLD}Iniciando instalación para${RESET} ${BLUE}${BOLD}$CURRENT_USER${RESET}"
 
     if [ -f "$HOME/.zshrc" ]; then
         log_info "Haciendo backup de .zshrc existente"
@@ -201,10 +269,10 @@ main() {
 
     # Copiar carpeta bin a .config del usuario
     if [ -d "$SCRIPT_DIR/bin" ]; then
-        log_info "Copiando carpeta bin a .config del usuario"
+        log_info "Copiando carpeta bin a .config del ${BLUE}${BOLD}${CURRENT_USER}${RESET}"
         mkdir -p "$CONFIG_DIR"
         cp -r "$SCRIPT_DIR/bin" "$CONFIG_DIR/" || { log_error "Error al copiar carpeta bin a .config"; exit 1; }
-        log_success "Carpeta bin copiada a .config del usuario"
+        log_success "Carpeta bin copiada a .config del ${BLUE}${BOLD}${CURRENT_USER}${RESET}"
     else
         log_error "No se encontró la carpeta bin en el directorio del script"
     fi
@@ -225,24 +293,24 @@ EOF
 
     log_success "Archivos de configuración copiados"
 
-    install_for_user "$CURRENT_USER" false
+    install_for_user "${BLUE}${BOLD}$CURRENT_USER${RESET}" false
 
-    log_success "Instalación para $CURRENT_USER completada"
+    log_success "Instalación para ${BLUE}${BOLD}$CURRENT_USER${RESET} completada"
 
     ask_for_password
 
-    log_step "Iniciando instalación para root"
+    log_step "${BOLD}Iniciando instalación para${RESET} ${RED}${BOLD}root${RESET}"
 
-    sudo -i bash -c "ln -sf /home/${CURRENT_USER}/.zshrc .zshrc" || { log_error "Error al crear enlace simbólico de .zshrc para root"; exit 1; }
-    log_success "Enlace simbólico de .zshrc creado para root"
+    sudo -i bash -c "ln -sf /home/${CURRENT_USER}/.zshrc .zshrc" || { log_error "Error al crear enlace simbólico de .zshrc para ${RED}${BOLD}root${RESET}"; exit 1; }
+    log_success "Enlace simbólico de .zshrc creado para ${RED}${BOLD}root${RESET}"
 
-    install_for_user "root" true
+    install_for_user "${RED}${BOLD}root${RESET}" true
 
-    log_info "Instalando Neovim para $CURRENT_USER"
-    install_neovim false || { log_error "Error al instalar Neovim para $CURRENT_USER"; exit 1; }
+    log_info "Instalando Neovim para ${BLUE}${BOLD}$CURRENT_USER${RESET}"
+    install_neovim false || { log_error "Error al instalar Neovim para ${BLUE}${BOLD}$CURRENT_USER${RESET}"; exit 1; }
 
-    log_info "Instalando Neovim para root"
-    install_neovim true || { log_error "Error al instalar Neovim para root"; exit 1; }
+    log_info "Instalando Neovim para ${RED}${BOLD}root${RESET}"
+    install_neovim true || { log_error "Error al instalar Neovim para ${RED}${BOLD}root${RESET}"; exit 1; }
 
     log_info "Instalando herramientas adicionales"
     sudo apt update && sudo apt install -y lsd bat terminator keepassxc || { log_error "Error al instalar herramientas adicionales"; exit 1; }
@@ -263,28 +331,39 @@ EOF
     else
         log_error "No se encontró el directorio sudo-plugin"
     fi
-    
+
+    # extractPorts después de obtener privilegios de root
+    install_extract_ports || { log_error "Error al instalar extractPorts"; exit 1; }
+
     sleep 1.5
     clear
     aliases
     clear
     sleep 1.5
 
-    echo -e "\n${GREEN}${BOLD}.:: Instalación completada con éxito ::.${RESET}"
+    echo -e "\n${GREEN}${BOLD}.:: Instalación completada con éxito ::.${RESET}\n"
 
-    echo -e "\n${CYAN}${BOLD}[+] Recomendaciones y características:${RESET}"
-    echo -e "${YELLOW}  • Neovim:${RESET} Ejecuta ${BLUE}${BOLD}nvim${RESET} para comenzar la personalizacion con ${BLUE}${BOLD}NvChad${RESET}"
-    echo -e "${YELLOW}  • ZSH:${RESET} Reinicia tu terminal para aplicar los cambios"
-    echo -e "${YELLOW}  • Herramientas:${RESET} Prueba las nuevas herramientas: lsd, bat y terminator keepassxc"
-    echo -e "${YELLOW}  • FZF:${RESET} Usa Ctrl+R para búsqueda en el historial y Ctrl+T para búsqueda de archivos"
-    echo -e "${YELLOW}  • Actualización:${RESET} Usa ${BLUE}${BOLD}updateAndclean${RESET} para actualizar y limpiar automáticamente el sistema"
-    echo -e "${YELLOW}  • Docker:${RESET} Usa ${BLUE}${BOLD}dockerClean${RESET} para limpiar contenedores"
-    echo -e "${YELLOW}  • Settarget:${RESET} Usa ${BLUE}${BOLD}settarget <ip> <nombre>${RESET} para establecer el objetivo"
-    echo -e "\n${CYAN}${BOLD}[+] Utilidades Pentesting:${RESET}"
-    echo -e "${YELLOW}  • Comandos:${RESET} Guías de comandos útiles disponibles con ${RED}${BOLD}utilscommon${RESET} y ${RED}${BOLD}utilscommon1${RESET}"
-    echo -e "${YELLOW}  • TTY:${RESET} Guia de mejora de la TTY de la maquina victima usando ${YELLOW}${BOLD}treatty${RESET}"
-    echo -e "${YELLOW}  • Vulnerabilidades:${RESET} Con el comando ${YELLOW}${BOLD}vuln${RESET} lista ayuda de algunas Vulnerabilidades"
-    echo -e "${YELLOW}  • Configuración:${RESET} Revisa el archivo .zshrc para entender y personalizar tu configuración"
+    title "Recomendaciones y características:"
+    text "${YELLOW}${BOLD}Neovim:${RESET} Ejecuta ${BLUE}${BOLD}nvim${RESET} para comenzar la personalización con ${BLUE}${BOLD}NvChad${RESET}"
+    text "${YELLOW}${BOLD}ZSH:${RESET} Reinicia tu terminal para aplicar los cambios"
+    text "${YELLOW}${BOLD}Herramientas:${RESET} Prueba las nuevas herramientas: lsd, bat y terminator keepassxc"
+    text "${YELLOW}${BOLD}FZF:${RESET} Usa Ctrl+R para búsqueda en el historial y Ctrl+T para búsqueda de archivos"
+    text "${YELLOW}${BOLD}Actualización:${RESET} Usa ${BLUE}${BOLD}updateAndclean${RESET} para actualizar y limpiar automáticamente el sistema"
+    text "${YELLOW}${BOLD}Docker:${RESET} Usa ${BLUE}${BOLD}dockerClean${RESET} para limpiar contenedores"
+    text "${YELLOW}${BOLD}Settarget:${RESET} Usa ${BLUE}${BOLD}settarget <ip> <nombre>${RESET} para establecer el objetivo" 
+
+    echo "" 
+
+    title "Utilidades Pentesting:"
+    text "${YELLOW}${BOLD}Comandos:${RESET} Guías de comandos útiles disponibles con ${RED}${BOLD}utilscommon${RESET} y ${RED}${BOLD}utilscommon1${RESET}"
+    text "Guía de mejora de la TTY de la máquina víctima usando ${RED}${BOLD}treatty${RESET}"
+    text "${YELLOW}${BOLD}Vulnerabilidades:${RESET} Con el comando ${RED}${BOLD}vuln${RESET} lista ayuda de algunas Vulnerabilidades"
+    text "${YELLOW}${BOLD}Configuración:${RESET} Revisa el archivo .zshrc para entender y personalizar tu configuración"
+
+    echo ""
+
+    update_version_title "Nueva actualización:"
+    update_version_text "Herramienta ${BLUE}${BOLD}extractPorts${RESET} mejorada integrada.\n\t${BLUE}${BOLD}╚>${RESET} Para usar la utilidad usa el comando ${BLUE}${BOLD}extractPorts${RESET} en la terminal."
 
     echo -e "\n${GREEN}${BOLD}.:: ¡Disfruta de tu nuevo entorno personalizado! ::.${RESET}\n"
 }
