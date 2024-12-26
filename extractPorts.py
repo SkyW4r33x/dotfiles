@@ -8,12 +8,12 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 def print_banner():
-    banner = """
+    banner = r"""
            _                  _  ______          _       
           | |                | | | ___ \        | |      
   _____  _| |_ _ __ __ _  ___| |_| |_/ /__  _ __| |_ ___ 
  / _ \ \/ / __| '__/ _` |/ __| __|  __/ _ \| '__| __/ __|
-|  __/>  <| |_| | | (_| | (__| |_| | | (_) | |  | |_\__ \\
+|  __/>  <| |_| | | (_| | (__| |_| | | (_) | |  | |_\__ \
  \___/_/\_\\__|_|  \__,_|\___|\__\_|  \___/|_|   \__|___/
     """
     print(Fore.RED + Style.BRIGHT + banner)
@@ -72,6 +72,7 @@ def extractPorts(input_file):
 if __name__ == "__main__":
     print_banner()
     if len(sys.argv) < 2:
-        print(Fore.YELLOW + Style.BRIGHT + "[!] Uso: extractPorts <filename>")
+        print(Fore.YELLOW + Style.BRIGHT + "[!] Uso: python3 extractPorts.py <filename>")
     else:
         extractPorts(sys.argv[1])
+
