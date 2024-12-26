@@ -72,7 +72,7 @@ def extractPorts(input_file):
 if __name__ == "__main__":
     print_banner()
     if len(sys.argv) < 2:
-        print(Fore.YELLOW + Style.BRIGHT + "[!] Uso: python3 extractPorts.py <filename>")
+        print(Fore.YELLOW + Style.BRIGHT + "[!] Uso: extractPorts <filename>")
     else:
         extractPorts(sys.argv[1])
 
