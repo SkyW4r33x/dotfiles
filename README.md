@@ -84,6 +84,7 @@ Ejemplo visual del arsenal de comandos del comando **`utilscommon`**:
 extracPorts resultados_nmap
 ```
 ## 🖼️ Vista Previa:
-![image](https://github.com/user-attachments/assets/8a5cabd3-9c77-4610-adad-5f251c4f2e0f)
+![image](https://github.com/user-attachments/assets/aeb4625d-84b3-4ff9-89dc-d6c970ca2c95)
+
 
 
