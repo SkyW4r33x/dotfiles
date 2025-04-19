@@ -15,18 +15,18 @@ import logging
 class KaliStyle:
     RESET = '\033[0m'
     BOLD = '\033[1m'
-    BLUE = '\033[38;2;39;127;255m'  # Azul #277FFF para el banner
-    TURQUOISE = '\033[38;2;71;212;185m'  # Turquesa #47D4B9 para éxito
-    ORANGE = '\033[38;2;255;138;24m'  # Naranja #FF8A18 para advertencias
+    BLUE = '\033[38;2;39;127;255m'  
+    TURQUOISE = '\033[38;2;71;212;185m' 
+    ORANGE = '\033[38;2;255;138;24m' 
     WHITE = '\033[37m'
     GREY = '\033[38;5;242m'
-    RED = '\033[38;2;220;20;60m'  # Rojo carmesí para errores
-    GREEN = '\033[38;2;71;212;185m'  # Verde #47D4B9 para "Completado"
+    RED = '\033[38;2;220;20;60m'  
+    GREEN = '\033[38;2;71;212;185m' 
     YELLOW = '\033[0;33m'
     MAGENTA = '\033[0;35m'
     CYAN = '\033[0;36m'
-    SUDO_COLOR = '\033[38;2;94;189;171m'  # Color para sudo y -y
-    APT_COLOR = '\033[38;2;73;174;230m'   # Color para apt
+    SUDO_COLOR = '\033[38;2;94;189;171m' 
+    APT_COLOR = '\033[38;2;73;174;230m' 
     SUCCESS = f"   {TURQUOISE}✔{RESET}"
     ERROR = f"   {RED}✘{RESET}"
     INFO = f"{BLUE}[i]{RESET}"
@@ -101,7 +101,7 @@ right-index=1
                 print(f"{KaliStyle.ERROR} Error ejecutando comando: {command}")
                 print(f"Salida: {e.stdout}")
                 print(f"Error: {e.stderr}")
-            logging.error(f"Error ejecutando comando: {command} - {e}")
+            logging.error(f"Error ejecutando comando: {command} - {e}\nSalida: {e.stdout}\nError: {e.stderr}")
             return False
         except PermissionError:
             print(f"{KaliStyle.ERROR} Permisos insuficientes para ejecutar: {command}")
@@ -203,21 +203,34 @@ right-index=1
             print(f"{KaliStyle.SUCCESS} Repositorios actualizados")
 
             print_status(first_run=True)
+            failed_packages = []
             for pkg in self.packages:
                 self.states[pkg] = f"{KaliStyle.YELLOW}Instalando...{KaliStyle.RESET}"
                 print_status()
-                if self.run_command(['apt', 'install', '-y', pkg], sudo=True, quiet=True):
-                    self.states[pkg] = f"{KaliStyle.GREEN}Completado{KaliStyle.RESET}"
-                else:
+                try:
+                    if self.run_command(['apt', 'install', '-y', pkg], sudo=True, quiet=True):
+                        self.states[pkg] = f"{KaliStyle.GREEN}Completado{KaliStyle.RESET}"
+                    else:
+                        self.states[pkg] = f"{KaliStyle.RED}Fallido{KaliStyle.RESET}"
+                        failed_packages.append(pkg)
+                        print(f"{KaliStyle.WARNING} Advertencia: Falló la instalación de {pkg}, continuando...")
+                except subprocess.CalledProcessError as e:
                     self.states[pkg] = f"{KaliStyle.RED}Fallido{KaliStyle.RESET}"
-                    print_status()
-                    return False
+                    failed_packages.append(pkg)
+                    logging.error(f"Error instalando {pkg}: {e}\nSalida: {e.stdout}\nError: {e.stderr}")
+                    print(f"{KaliStyle.WARNING} Advertencia: Falló la instalación de {pkg}, continuando...")
+                print_status()
                 time.sleep(0.2)
-            print_status()
-            print(f"\n{KaliStyle.SUCCESS} Instalación finalizada")
+            
+            if failed_packages:
+                print(f"\n{KaliStyle.WARNING} Los siguientes paquetes fallaron: {', '.join(failed_packages)}")
+                print(f"{KaliStyle.INFO} Revisa install.log para más detalles.")
+            else:
+                print(f"\n{KaliStyle.SUCCESS} Instalación finalizada")
             return True
         except Exception as e:
             print(f"\n{KaliStyle.ERROR} Error instalando paquetes: {str(e)}")
+            logging.error(f"Error general en install_additional_packages: {str(e)}")
             return False
 
     def copy_executor_bin_folder(self):
@@ -598,7 +611,6 @@ right-index=1
             return False
 
     def setup_ctf_folders(self):
-        """Crea carpetas para CTF en /root/machines_vuln/."""
         print(f"\n{KaliStyle.INFO} Configurando carpetas para CTF...")
         ctf_folders = [
             "/root/machines_vuln/HTB",
