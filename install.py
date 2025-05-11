@@ -42,6 +42,7 @@ class CombinedInstaller:
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.pictures_dir = os.path.join(self.home_dir, 'Pictures')
         self.actions_taken = []
+        self.needs_gdm_restart = False  # Bandera para indicar si se necesita reiniciar GDM
         logging.basicConfig(filename='install.log', level=logging.INFO, 
                           format='%(asctime)s - %(levelname)s - %(message)s')
         self.executor_config_dir = f"/home/{self.current_user}/.config/bin"
@@ -80,7 +81,7 @@ right-index=1
 ██║  ██║██║   ██║   ██║   ██╔══╝  ██║██║     ██╔══╝  ╚════██║
 ██████╔╝╚██████╔╝   ██║   ██║     ██║███████╗███████╗███████║
 ╚═════╝  ╚═════╝    ╚═╝   ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝""")
-        print(f"{KaliStyle.WHITE}\t\t [ Dotfiles GNOME - v.0.1 ]{KaliStyle.RESET}")
+        print(f"{KaliStyle.WHITE}\t\t [ Dotfiles GNOME - v.1.1 ]{KaliStyle.RESET}")
         print(f"{KaliStyle.GREY}\t\t  [ Created by SkyW4r33x ]{KaliStyle.RESET}\n")
 
     def run_command(self, command, shell=False, sudo=False, quiet=True):
@@ -581,6 +582,50 @@ right-index=1
             print(f"{KaliStyle.ERROR} Error al configurar el fondo de pantalla: {str(e)}")
             return False
 
+    def setup_gdm_wallpaper(self):
+        print(f"\n{KaliStyle.INFO} Configurando fondo de pantalla para GDM...")
+        wallpaper_source_dir = os.path.join(self.script_dir, "wallpaper")
+        wallpaper_source_file = os.path.join(wallpaper_source_dir, "browser-home-page-banner.jpg")
+        gdm_wallpaper_dest_dir = "/usr/share/backgrounds/kali"
+        gdm_wallpaper_dest_file = os.path.join(gdm_wallpaper_dest_dir, "login-blurred")
+        backup_file = f"{gdm_wallpaper_dest_file}.bak.{time.strftime('%Y%m%d_%H%M%S')}"
+
+        try:
+            if not os.path.exists(wallpaper_source_file):
+                print(f"{KaliStyle.ERROR} No se encontró el fondo de pantalla en {wallpaper_source_file}")
+                return False
+            print(f"{KaliStyle.SUCCESS} Archivo de fondo encontrado: {wallpaper_source_file}")
+
+            if not os.path.exists(gdm_wallpaper_dest_dir):
+                if not self.run_command(['mkdir', '-p', gdm_wallpaper_dest_dir], sudo=True, quiet=True):
+                    print(f"{KaliStyle.ERROR} No se pudo crear el directorio {gdm_wallpaper_dest_dir}")
+                    return False
+                print(f"{KaliStyle.SUCCESS} Directorio creado: {gdm_wallpaper_dest_dir}")
+
+            if os.path.exists(gdm_wallpaper_dest_file):
+                if not self.run_command(['cp', gdm_wallpaper_dest_file, backup_file], sudo=True, quiet=True):
+                    print(f"{KaliStyle.ERROR} No se pudo crear respaldo de {gdm_wallpaper_dest_file}")
+                    return False
+                self.actions_taken.append({'type': 'file_copy', 'dest': backup_file})
+                print(f"{KaliStyle.SUCCESS} Respaldo creado: {backup_file}")
+
+            if not self.run_command(['cp', wallpaper_source_file, gdm_wallpaper_dest_file], sudo=True, quiet=True):
+                print(f"{KaliStyle.ERROR} No se pudo copiar el fondo a {gdm_wallpaper_dest_file}")
+                return False
+            if not self.run_command(['chmod', '644', gdm_wallpaper_dest_file], sudo=True, quiet=True):
+                print(f"{KaliStyle.ERROR} No se pudo establecer permisos en {gdm_wallpaper_dest_file}")
+                return False
+            self.actions_taken.append({'type': 'file_copy', 'dest': gdm_wallpaper_dest_file})
+            print(f"{KaliStyle.SUCCESS} Fondo copiado y renombrado a {gdm_wallpaper_dest_file}")
+
+            self.needs_gdm_restart = True
+
+            print(f"{KaliStyle.SUCCESS} Fondo de pantalla de GDM configurado")
+            return True
+        except Exception as e:
+            print(f"{KaliStyle.ERROR} Error al configurar el fondo de pantalla de GDM: {str(e)}")
+            return False
+
     def setup_browser_wallpaper(self):
         print(f"\n{KaliStyle.INFO} Configurando fondo de pantalla del navegador...")
         wallpaper_source_dir = os.path.join(self.script_dir, "wallpaper")
@@ -709,10 +754,11 @@ right-index=1
         print(f"{KaliStyle.WARNING} Revirtiendo cambios...")
         for action in reversed(self.actions_taken):
             if action['type'] == 'file_copy' and os.path.exists(action['dest']):
-                os.remove(action['dest'])
+                self.run_command(['rm', action['dest']], sudo=True, quiet=True)
+                print(f"{KaliStyle.SUCCESS} Eliminado {action['dest']}")
             elif action['type'] == 'dir_copy' and os.path.exists(action['dest']):
-                shutil.rmtree(action['dest'])
-            print(f"{KaliStyle.SUCCESS} Eliminado {action['dest']}")
+                self.run_command(['rm', '-rf', action['dest']], sudo=True, quiet=True)
+                print(f"{KaliStyle.SUCCESS} Eliminado {action['dest']}")
         print(f"{KaliStyle.SUCCESS} Cambios revertidos")
 
     def run(self):
@@ -739,7 +785,8 @@ right-index=1
             (self.configure_keyboard_shortcuts, "Configuración de atajos de teclado"),
             (self.setup_wallpaper, "Configuración del fondo de pantalla"),
             (self.setup_browser_wallpaper, "Configuración del fondo de pantalla del navegador"),
-            (self.setup_ctf_folders, "Configuración de carpetas para CTF")
+            (self.setup_ctf_folders, "Configuración de carpetas para CTF"),
+            (self.setup_gdm_wallpaper, "Configuración del fondo de pantalla de GDM")
         ]
 
         total_tasks = len(tasks)
@@ -757,6 +804,18 @@ right-index=1
             print()
 
             self.show_final_message()
+
+            if self.needs_gdm_restart:
+                print(f"\n{KaliStyle.WARNING} Es necesario reiniciar GDM para aplicar los cambios.")
+                user_input = input(f"{KaliStyle.SUDO_COLOR}¿Desea reiniciar GDM ahora? (s/n): {KaliStyle.RESET}").lower()
+                if user_input == 's':
+                    if not self.run_command(['systemctl', 'restart', 'gdm'], sudo=True, quiet=True):
+                        print(f"{KaliStyle.ERROR} No se pudo reiniciar GDM. Por favor, reinicie manualmente con 'sudo systemctl restart gdm'")
+                    else:
+                        print(f"{KaliStyle.SUCCESS} GDM reiniciado")
+                else:
+                    print(f"{KaliStyle.WARNING} Por favor, reinicie GDM manualmente con 'sudo systemctl restart gdm'")
+
             self.cleanup()
             logging.info("Instalación completada exitosamente")
             return True
