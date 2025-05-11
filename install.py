@@ -585,7 +585,7 @@ right-index=1
     def setup_gdm_wallpaper(self):
         print(f"\n{KaliStyle.INFO} Configurando fondo de pantalla para GDM...")
         wallpaper_source_dir = os.path.join(self.script_dir, "wallpaper")
-        wallpaper_source_file = os.path.join(wallpaper_source_dir, "browser-home-page-banner.jpg")
+        wallpaper_source_file = os.path.join(wallpaper_source_dir, "gdm_wallpaper.png")
         gdm_wallpaper_dest_dir = "/usr/share/backgrounds/kali"
         gdm_wallpaper_dest_file = os.path.join(gdm_wallpaper_dest_dir, "login-blurred")
         backup_file = f"{gdm_wallpaper_dest_file}.bak.{time.strftime('%Y%m%d_%H%M%S')}"
