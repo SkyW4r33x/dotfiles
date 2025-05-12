@@ -205,7 +205,7 @@ _Barra inferior personalizada con Dash to Panel y comandos dinámicos de Executo
 | Estado | Prompt        |
 |-------------------|-------------------|
 | Exitoso | ![Prompt](https://i.imgur.com/fNuGtBM.png)  |
-| Fallido | ![Prompt](https://i.imgur.com/oabJiCu.png)              |
+| Fallido | ![Prompt](https://i.imgur.com/oabJiCu.png)  |
 
 _El nuevo prompt de ZSH personalizado muestra un estilo moderno y funcional. Usa colores turquesa (✔) para comandos exitosos y rojo carmesí (✘) para errores, acompañado de información como el usuario, directorio actual y estado del comando anterior, todo con fuentes JetBrainsMono._
 
@@ -230,6 +230,10 @@ __Terminal ligero con fondo semi-transparente, pestañas powerline y fuentes Jet
 
 ![Neovim](https://i.imgur.com/UoqShDn.png)  
 _Editor de texto moderno con una interfaz limpia y funcionalidades avanzadas._
+
+## 🆕 Actualización Añadida: GDME
+![Update](https://i.imgur.com/QEHcabX.png)
+_Se ha implementado un nuevo **fondo de bloqueo** personalizado para `gdb` en entorno **Gnome**_
 
 # H4PPY H4CK1NG
 
