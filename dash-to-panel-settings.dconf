@@ -1,0 +1,19 @@
+[/]
+animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
+dot-position='BOTTOM'
+extension-version=68
+hotkeys-overlay-combo='TEMPORARILY'
+panel-anchors='{"unknown-unknown":"MIDDLE"}'
+panel-element-positions='{}'
+panel-lengths='{}'
+panel-positions='{}'
+panel-sizes='{}'
+prefs-opened=false
+primary-monitor='unknown-unknown'
+taskbar-locked=false
+trans-bg-color='#181a20'
+trans-panel-opacity=0.94000000000000006
+trans-use-custom-bg=true
+trans-use-custom-gradient=false
+trans-use-custom-opacity=true
+window-preview-title-position='TOP'
