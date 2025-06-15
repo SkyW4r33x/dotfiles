@@ -98,6 +98,16 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+# Función para detectar VPN activa y obtener IP
+vpn_status() {
+  if ip addr show tun0 &>/dev/null; then
+    vpn_ip=$(ip addr show tun0 | awk '/inet / {print $2}' | cut -d'/' -f1 | head -1)
+    [[ -n "$vpn_ip" ]] && echo -n "-[%F{white}%B${vpn_ip}%b%F{%(#.blue.green)}]" || echo -n ""
+  else
+    echo -n ""
+  fi
+}
+
 configure_prompt() {
     prompt_symbol=㉿
     prompt_folder=󰋜 
@@ -106,21 +116,18 @@ configure_prompt() {
     #[ "$EUID" -eq 0 ] && prompt_symbol=💀
     case "$PROMPT_ALTERNATIVE" in
         twoline)
-            PROMPT=$'%F{%(#.blue.green)}┌──[%F{white}'$prompt_kali$'%F{%(#.blue.green)} ]-(%B%F{%(#.red.blue)}%n%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]-[%(?.%F{green}✔.%F{red}✘ %?)%F{%(#.blue.green)}]\n└──╼%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
-
+            # Prompt original con segmento VPN dinámico
+            PROMPT=$'%F{%(#.blue.green)}┌──[%F{white}'$prompt_kali$'%F{%(#.blue.green)} ]-(%B%F{%(#.red.blue)}%n%b%F{%(#.blue.green)})%{$(vpn_status)%}-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]-[%(?.%F{green}✔.%F{red}✘ %?)%F{%(#.blue.green)}]\n└──╼%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
             # Right-side prompt with exit codes and background processes
             #RPROMPT=$'%(?.. %? %F{red}%B⨯%b%F{reset})%(1j. %j %F{yellow}%B⚙%b%F{reset}.)'
             ;;
         oneline)
             PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(#.#.$) '
-
             RPROMPT=
             ;;
         backtrack)      
             #PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{#3464eb}%n'$prompt_symbol'%m%b%F{#EC0101}:%B%F{#ffffff}%~%b%F{#EC0101}%(#.#.$)%f '
-
             #PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{#3464eb}%n%b%F{#EC0101}:%B%F{#ffffff}%~%b%F{#EC0101}%(#.#.$)%f '
-
             RPROMPT=
             ;;
     esac
