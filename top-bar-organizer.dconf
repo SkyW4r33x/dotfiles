@@ -1,0 +1,3 @@
+[/]
+left-box-order=['places-menu']
+right-box-order=['tiling-assistant@leleat-on-github', 'drive-menu', 'top-panel-target-indicator', 'vpn-ip-address-indicator', 'top-panel-localip-indicator', 'screenRecording', 'screenSharing', 'dwellClick', 'a11y', 'keyboard']

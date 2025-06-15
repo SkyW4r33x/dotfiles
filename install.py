@@ -42,35 +42,9 @@ class CombinedInstaller:
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.pictures_dir = os.path.join(self.home_dir, 'Pictures')
         self.actions_taken = []
-        self.needs_gdm_restart = False  # Bandera para indicar si se necesita reiniciar GDM
+        self.needs_gdm_restart = False
         logging.basicConfig(filename='install.log', level=logging.INFO, 
                           format='%(asctime)s - %(levelname)s - %(message)s')
-        self.executor_config_dir = f"/home/{self.current_user}/.config/bin"
-        self.executor_id = "executor@raujonas.github.io"
-        self.executor_versions = {
-            47: {"version": "v27", "url": "https://github.com/raujonas/executor/releases/download/v27/executor@raujonas.github.io"},
-            48: {"version": "v28", "url": "https://github.com/raujonas/executor/releases/download/v28/executor@raujonas.github.io"}
-        }
-        self.executor_right_commands = {
-            "commands": [
-                {"isActive": True, "command": f"/home/{self.current_user}/.config/bin/bin-gnome/target.sh", "interval": 1, "uuid": "66268560-cea9-4d1e-a877-17a63e474000"},
-                {"isActive": True, "command": "echo '    '", "interval": 1, "uuid": "c47c221b-3011-49c5-a1f3-765b0ddfdd48"},
-                {"isActive": True, "command": f"/home/{self.current_user}/.config/bin/bin-gnome/vpnip.sh", "interval": 1, "uuid": "44275a45-c74d-43da-8f80-2a31e7ced1fb"},
-                {"isActive": True, "command": "echo '    '", "interval": 1, "uuid": "398bf1a0-4f5c-43f5-a022-a440698afc23"},
-                {"isActive": True, "command": f"/home/{self.current_user}/.config/bin/bin-gnome/ethernet.sh", "interval": 1, "uuid": "a3407daf-6c76-4fa5-9742-5f48c085fb3b"}
-            ]
-        }
-        self.executor_dconf_settings = f"""[/]
-center-active=false
-center-commands-json='{{\\"commands\\":[]}}'
-click-on-output-active=false
-left-active=false
-left-commands-json='{{\\"commands\\":[]}}'
-location=2
-right-active=true
-right-commands-json='{json.dumps(self.executor_right_commands).replace("'", "\\'")}'
-right-index=1
-"""
 
     def show_banner(self):
         print(f"{KaliStyle.BLUE}{KaliStyle.BOLD}")
@@ -135,9 +109,18 @@ right-index=1
 
     def check_required_files(self):
         required_files = [
-            "dash-to-panel-settings.dconf", "nvim-linux64.tar.gz", "JetBrainsMono.zip",
-            "extractPorts.py", ".zshrc", "terminator", "kitty", "sudo-plugin",
-            "wallpaper/kali-galaxy-3840x2160.png", "wallpaper/browser-home-page-banner.jpg"
+            "dash-to-panel-settings.dconf", 
+            "top-bar-organizer.dconf",  # Añadido
+            "nvim-linux64.tar.gz", 
+            "JetBrainsMono.zip",
+            "extractPorts.py", 
+            ".zshrc", 
+            "terminator", 
+            "kitty", 
+            "sudo-plugin",
+            "wallpaper/kali-simple-3840x2160.png", 
+            "wallpaper/browser-home-page-banner.jpg",
+            "gnome-extensions"
         ]
         missing = [f for f in required_files if not os.path.exists(os.path.join(self.script_dir, f))]
         if missing:
@@ -145,6 +128,55 @@ right-index=1
             print(f"{KaliStyle.INFO} Asegúrate de que estén en {self.script_dir}")
             return False
         return True
+
+    def install_custom_extensions(self):
+        print(f"\n{KaliStyle.INFO} Instalando extensiones personalizadas...")
+        
+        source_extensions_dir = os.path.join(self.script_dir, "gnome-extensions")
+        if not os.path.exists(source_extensions_dir):
+            print(f"{KaliStyle.ERROR} No se encontró la carpeta gnome-extensions en {source_extensions_dir}")
+            return False
+        
+        custom_extensions = [
+            "top-panel-ethernet@kali.org",
+            "top-panel-target@kali.org", 
+            "top-panel-vpnip@kali.org",
+            "top-bar-organizer@julian.gse.jsts.xyz"
+        ]
+        
+        os.makedirs(self.extensions_dir, exist_ok=True)
+        
+        success_count = 0
+        for extension in custom_extensions:
+            source_path = os.path.join(source_extensions_dir, extension)
+            dest_path = os.path.join(self.extensions_dir, extension)
+            
+            if not os.path.exists(source_path):
+                print(f"{KaliStyle.ERROR} No se encontró la extensión {extension} en {source_path}")
+                continue
+                
+            try:
+                if os.path.exists(dest_path):
+                    shutil.rmtree(dest_path)
+                
+                shutil.copytree(source_path, dest_path)
+                self.actions_taken.append({'type': 'dir_copy', 'dest': dest_path})
+                print(f"{KaliStyle.SUCCESS} Extensión {extension} instalada")
+                success_count += 1
+                
+            except Exception as e:
+                print(f"{KaliStyle.ERROR} Error copiando {extension}: {str(e)}")
+                logging.error(f"Error copiando extensión {extension}: {str(e)}")
+        
+        if success_count == len(custom_extensions):
+            print(f"{KaliStyle.SUCCESS} Todas las extensiones personalizadas instaladas correctamente")
+            return True
+        elif success_count > 0:
+            print(f"{KaliStyle.WARNING} {success_count}/{len(custom_extensions)} extensiones instaladas")
+            return True
+        else:
+            print(f"{KaliStyle.ERROR} No se pudo instalar ninguna extensión personalizada")
+            return False
 
     def check_graphical_environment(self):
         if not os.environ.get('DISPLAY'):
@@ -234,97 +266,6 @@ right-index=1
             logging.error(f"Error general en install_additional_packages: {str(e)}")
             return False
 
-    def copy_executor_bin_folder(self):
-        try:
-            bin_source = os.path.join(self.script_dir, "bin")
-            if not os.path.exists(bin_source):
-                print(f"{KaliStyle.WARNING} No se encontró 'bin' en {self.script_dir}")
-                return False
-
-            bin_gnome_dir = os.path.join(bin_source, "bin-gnome")
-            required_scripts = ["target.sh", "vpnip.sh", "ethernet.sh"]
-            missing_scripts = [s for s in required_scripts if not os.path.exists(os.path.join(bin_gnome_dir, s))]
-            if missing_scripts:
-                print(f"{KaliStyle.ERROR} Faltan scripts: {', '.join(missing_scripts)}")
-                return False
-
-            if os.path.exists(self.executor_config_dir):
-                shutil.rmtree(self.executor_config_dir)
-            shutil.copytree(bin_source, self.executor_config_dir)
-
-            for root, _, files in os.walk(self.executor_config_dir):
-                for file in files:
-                    if file.endswith(".sh"):
-                        os.chmod(os.path.join(root, file), 0o755)
-            print(f"{KaliStyle.SUCCESS} Carpeta 'bin' copiada y permisos otorgados")
-            return True
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error al copiar 'bin': {e}")
-            return False
-
-    def get_gnome_version(self):
-        try:
-            result = subprocess.run(["gnome-shell", "--version"], capture_output=True, text=True, check=True)
-            return int(result.stdout.strip().split()[-1].split('.')[0])
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error al verificar GNOME Shell: {e}")
-            sys.exit(1)
-
-    def select_executor_version(self, gnome_version):
-        if gnome_version >= 48:
-            return self.executor_versions[48]["url"], self.executor_versions[48]["version"]
-        elif gnome_version == 47:
-            return self.executor_versions[47]["url"], self.executor_versions[47]["version"]
-        else:
-            print(f"{KaliStyle.ERROR} GNOME Shell {gnome_version} no compatible con Executor")
-            sys.exit(1)
-
-    def download_and_install_executor(self):
-        print(f"\n{KaliStyle.INFO} Instalando Executor...")
-        try:
-            gnome_version = self.get_gnome_version()
-            extension_url, executor_version = self.select_executor_version(gnome_version)
-            with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
-                urllib.request.urlretrieve(extension_url, temp_file.name)
-                with zipfile.ZipFile(temp_file.name, 'r') as zip_ref:
-                    zip_ref.extractall(os.path.join(self.extensions_dir, self.executor_id))
-            os.remove(temp_file.name)
-            print(f"{KaliStyle.SUCCESS} Executor {executor_version} instalado")
-            return True
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error instalando Executor: {e}")
-            return False
-
-    def enable_executor(self):
-        print(f"\n{KaliStyle.INFO} Activando Executor...")
-        try:
-            subprocess.run(['gnome-extensions', 'enable', self.executor_id], check=True, stdout=subprocess.DEVNULL)
-            print(f"{KaliStyle.SUCCESS} {self.executor_id} activada")
-            return True
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error activando Executor: {e}")
-            return False
-
-    def export_executor_dconf_settings(self):
-        try:
-            dconf_file = os.path.join(self.script_dir, "executor-settings.dconf")
-            with open(dconf_file, "w") as f:
-                f.write(self.executor_dconf_settings)
-            return dconf_file
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error exportando configuraciones: {e}")
-            return None
-
-    def import_executor_dconf_settings(self, dconf_file):
-        try:
-            subprocess.run(["dconf", "load", "/org/gnome/shell/extensions/executor/"], 
-                           stdin=open(dconf_file, "r"), check=True)
-            print(f"{KaliStyle.SUCCESS} Configuraciones de Executor importadas")
-            return True
-        except Exception as e:
-            print(f"{KaliStyle.ERROR} Error importando configuraciones: {e}")
-            return False
-
     def install_gnome_extensions(self):
         print(f"\n{KaliStyle.INFO} Instalando extensiones GNOME...")
         if os.path.exists(self.temp_dir):
@@ -332,7 +273,7 @@ right-index=1
         os.makedirs(self.temp_dir)
         os.chdir(self.temp_dir)
 
-        if not self.copy_executor_bin_folder() or not self.install_dash_to_panel() or not self.download_and_install_executor():
+        if not self.install_dash_to_panel():
             return False
         self.manage_extensions(quiet=True)
         return True
@@ -386,7 +327,8 @@ right-index=1
             extensions_to_disable = [
                 'dash-to-dock@micxgx.gmail.com', 
                 'system-monitor@gnome-shell-extensions.gcampax.github.com',
-                'apps-menu@gnome-shell-extensions.gcampax.github.com'
+                'apps-menu@gnome-shell-extensions.gcampax.github.com',
+                'top-panel-vpnip@kali.org'
             ]
             for ext in extensions_to_disable:
                 subprocess.run(['gnome-extensions', 'disable', ext], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -398,27 +340,69 @@ right-index=1
 
     def enable_extensions(self):
         print(f"\n{KaliStyle.INFO} Activando extensiones...")
-        extensions = ["dash-to-panel@jderose9.github.com", "executor@raujonas.github.io"]
+        
+        extensions = [
+            "dash-to-panel@jderose9.github.com",
+            "top-panel-ethernet@kali.org",
+            "top-panel-target@kali.org", 
+            "top-panel-vpnip@kali.org",
+            "top-bar-organizer@julian.gse.jsts.xyz"
+        ]
+        
+        enabled_count = 0
         for ext in extensions:
             try:
                 subprocess.run(['gnome-extensions', 'enable', ext], check=True, stdout=subprocess.DEVNULL)
                 print(f"{KaliStyle.SUCCESS} {ext} activada")
-            except Exception:
-                print(f"{KaliStyle.ERROR} Error activando {ext}")
+                enabled_count += 1
+            except subprocess.CalledProcessError as e:
+                print(f"{KaliStyle.ERROR} Error activando {ext}: {str(e)}")
+                logging.error(f"Error activando extensión {ext}: {str(e)}")
+            except Exception as e:
+                print(f"{KaliStyle.ERROR} Error inesperado activando {ext}: {str(e)}")
 
+        # Aplicar configuración de Dash to Panel
         dash_config_source = os.path.join(self.script_dir, "dash-to-panel-settings.dconf")
         if os.path.exists(dash_config_source) and os.path.getsize(dash_config_source) > 0:
-            with open(dash_config_source, 'rb') as f:
-                subprocess.run(['dconf', 'load', '/org/gnome/shell/extensions/dash-to-panel/'], input=f.read(), check=True)
-            print(f"{KaliStyle.SUCCESS} Configuración de Dash to Panel aplicada")
+            try:
+                with open(dash_config_source, 'rb') as f:
+                    subprocess.run(['dconf', 'load', '/org/gnome/shell/extensions/dash-to-panel/'], 
+                                 input=f.read(), check=True)
+                print(f"{KaliStyle.SUCCESS} Configuración de Dash to Panel aplicada")
+            except Exception as e:
+                print(f"{KaliStyle.ERROR} Error aplicando configuración de Dash to Panel: {str(e)}")
+                logging.error(f"Error aplicando configuración de Dash to Panel: {str(e)}")
+
+        # Aplicar configuración de Top Bar Organizer
+        top_bar_config_source = os.path.join(self.script_dir, "top-bar-organizer.dconf")
+        if os.path.exists(top_bar_config_source) and os.path.getsize(top_bar_config_source) > 0:
+            try:
+                with open(top_bar_config_source, 'rb') as f:
+                    subprocess.run(['dconf', 'load', '/org/gnome/shell/extensions/top-bar-organizer/'], 
+                                 input=f.read(), check=True)
+                print(f"{KaliStyle.SUCCESS} Configuración de Top Bar Organizer aplicada")
+            except Exception as e:
+                print(f"{KaliStyle.ERROR} Error aplicando configuración de Top Bar Organizer: {str(e)}")
+                logging.error(f"Error aplicando configuración de Top Bar Organizer: {str(e)}")
         
-        dconf_file = self.export_executor_dconf_settings()
-        if dconf_file:
-            self.import_executor_dconf_settings(dconf_file)
+        if enabled_count > 0:
+            print(f"{KaliStyle.SUCCESS} {enabled_count}/{len(extensions)} extensiones activadas")
+            return True
+        else:
+            print(f"{KaliStyle.ERROR} No se pudo activar ninguna extensión")
+            return False
 
     def verify_installation(self):
         print(f"\n{KaliStyle.INFO} Verificando instalación...")
-        extensions_to_check = ["dash-to-panel@jderose9.github.com", "executor@raujonas.github.io"]
+        
+        extensions_to_check = [
+            "dash-to-panel@jderose9.github.com",
+            "top-panel-ethernet@kali.org",
+            "top-panel-target@kali.org", 
+            "top-panel-vpnip@kali.org",
+            "top-bar-organizer@julian.gse.jsts.xyz"
+        ]
+        
         installed_count = 0
         for ext in extensions_to_check:
             ext_path = os.path.join(self.extensions_dir, ext)
@@ -499,14 +483,36 @@ right-index=1
     def setup_aliases(self):
         print(f"\n{KaliStyle.INFO} Configurando aliases...")
         zshrc_path = f"/home/{self.current_user}/.zshrc"
+        
+        target_dir = os.path.join(self.config_dir, "bin", "target")
+        os.makedirs(target_dir, exist_ok=True)
+        self.actions_taken.append({'type': 'dir_copy', 'dest': target_dir})
+        print(f"{KaliStyle.SUCCESS} Directorio {target_dir} creado o verificado")
+        
+        target_file = os.path.join(target_dir, "target.txt")
+        try:
+            with open(target_file, 'a') as f:
+                pass
+            self.actions_taken.append({'type': 'file_copy', 'dest': target_file})
+            print(f"{KaliStyle.SUCCESS} Archivo {target_file} creado")
+        except Exception as e:
+            print(f"{KaliStyle.ERROR} Error al crear {target_file}: {str(e)}")
+            logging.error(f"Error al crear {target_file}: {str(e)}")
+            return False
+
         aliases_and_functions = [
             f"\n# Aliases\nalias {self.current_user}='su {self.current_user}'",
-            f"\n# settargeted\nsettarget () {{\n\tip_address=$1\n\tmachine_name=$2\n\techo \"$ip_address $machine_name\" > \"/home/{self.current_user}/.config/bin/target/target.txt\"\n}}"
+            f"\n# settargeted\nsettarget () {{\n\tip_address=$1\n\tmachine_name=$2\n\techo \"$ip_address $machine_name\" > \"{target_file}\"\n}}"
         ]
-        with open(zshrc_path, 'a') as f:
-            f.writelines(aliases_and_functions)
-        print(f"{KaliStyle.SUCCESS} Aliases configurados")
-        return True
+        try:
+            with open(zshrc_path, 'a') as f:
+                f.writelines(aliases_and_functions)
+            print(f"{KaliStyle.SUCCESS} Aliases configurados")
+            return True
+        except Exception as e:
+            print(f"{KaliStyle.ERROR} Error al configurar aliases en {zshrc_path}: {str(e)}")
+            logging.error(f"Error al configurar aliases: {str(e)}")
+            return False
 
     def install_fonts(self):
         print(f"\n{KaliStyle.INFO} Instalando fuentes JetBrainsMono...")
@@ -559,9 +565,9 @@ right-index=1
     def setup_wallpaper(self):
         print(f"\n{KaliStyle.INFO} Configurando fondo de pantalla...")
         wallpaper_source_dir = os.path.join(self.script_dir, "wallpaper")
-        wallpaper_file = os.path.join(wallpaper_source_dir, "kali-galaxy-3840x2160.png")
+        wallpaper_file = os.path.join(wallpaper_source_dir, "kali-simple-3840x2160.png")
         wallpaper_dest_dir = os.path.join(self.pictures_dir, "wallpaper")
-        wallpaper_dest_path = os.path.join(wallpaper_dest_dir, "kali-galaxy-3840x2160.png")
+        wallpaper_dest_path = os.path.join(wallpaper_dest_dir, "kali-simple-3840x2160.png")
 
         try:
             if not os.path.exists(wallpaper_file):
@@ -729,7 +735,10 @@ right-index=1
             ]),
             ("Extensiones GNOME", [
                 ("Dash to Panel", "Panel personalizado"),
-                ("Executor", "Comandos personalizados")
+                ("Top Panel Ethernet", "Información de red"),
+                ("Top Panel Target", "Información de objetivo"),
+                ("Top Panel VPN IP", "Información de VPN"),
+                ("Top Bar Organizer", "Organización de barra superior")
             ])
         ]
         
@@ -770,9 +779,9 @@ right-index=1
 
         if not self.check_gnome_requirements():
             return False
-
         tasks = [
             (self.install_gnome_extensions, "Instalación de extensiones GNOME"),
+            (self.install_custom_extensions, "Instalación de extensiones personalizadas"),
             (self.verify_installation, "Verificación de instalación"),
             (self.install_additional_packages, "Instalación de paquetes adicionales"),
             (self.setup_dotfiles, "Configuración de dotfiles"),
