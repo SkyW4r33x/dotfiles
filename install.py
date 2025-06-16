@@ -479,7 +479,7 @@ class CombinedInstaller:
             print(f"{KaliStyle.SUCCESS} extractPorts instalado")
             return True
         return False
-
+        
     def setup_aliases(self):
         print(f"\n{KaliStyle.INFO} Configurando aliases...")
         zshrc_path = f"/home/{self.current_user}/.zshrc"
@@ -502,7 +502,85 @@ class CombinedInstaller:
 
         aliases_and_functions = [
             f"\n# Aliases\nalias {self.current_user}='su {self.current_user}'",
-            f"\n# settargeted\nsettarget () {{\n\tip_address=$1\n\tmachine_name=$2\n\techo \"$ip_address $machine_name\" > \"{target_file}\"\n}}"
+            f"""\n# settarget function
+    function settarget() {{
+        # Colores ANSI para la salida
+        local WHITE='\\033[1;37m'
+        local GREEN='\\033[0;32m'
+        local YELLOW='\\033[1;33m'
+        local RED='\\033[0;31m'
+        local BLUE='\\033[0;34m'
+        local CYAN='\\033[1;36m'
+        local PURPLE='\\033[1;35m'
+        local GRAY='\\033[38;5;244m'
+        local BOLD='\\033[1m'
+        local ITALIC='\\033[3m'
+        local COMAND='\\033[38;2;73;174;230m'
+        local NC='\\033[0m' # Sin color
+        
+        local target_file="{target_file}"
+        
+        # Crear directorio si no existe
+        mkdir -p "$(dirname "$target_file")" 2>/dev/null
+        
+        # Si no se proporciona ningún parámetro, limpiar el archivo
+        if [ $# -eq 0 ]; then
+            if [ -f "$target_file" ]; then
+                rm -f "$target_file"
+                echo -e "\\n${{CYAN}}[${{BOLD}}+${{NC}}${{CYAN}}]${{NC}} Target limpiado correctamente\\n"
+            else
+                echo -e "\\n${{YELLOW}}[${{BOLD}}!${{NC}}${{YELLOW}}]${{NC}} No hay target para limpiar\\n"
+            fi
+            return 0
+        fi
+        
+        local ip_address="$1"
+        local machine_name="$2"
+        
+        # Verificar si se proporcionaron ambos parámetros
+        if [ -z "$ip_address" ] || [ -z "$machine_name" ]; then
+            echo -e "\\n${{RED}}▋${{NC}} Error${{RED}}${{BOLD}}:${{NC}}${{ITALIC}} modo de uso.${{NC}}"
+            echo -e "${{GRAY}}—————————————————————${{NC}}"
+            echo -e "  ${{CYAN}}• ${{NC}}${{COMAND}}settarget ${{NC}}192.168.1.100 WebServer "
+            echo -e "  ${{CYAN}}• ${{NC}}${{COMAND}}settarget ${{GRAY}}${{ITALIC}}(limpiar target)${{NC}}\\n"
+            return 1
+        fi
+        
+        # Validar formato de IP (simplificado)
+        if ! echo "$ip_address" | grep -qE '^[0-9]{{1,3}}\\.[0-9]{{1,3}}\\.[0-9]{{1,3}}\\.[0-9]{{1,3}}$'; then
+            echo -e "\\n${{RED}}▋${{NC}} Error${{RED}}${{BOLD}}:${{NC}}"
+            echo -e "${{GRAY}}————————${{NC}}"
+            echo -e "${{RED}}[${{BOLD}}✘${{NC}}${{RED}}]${{NC}} Formato de IP inválido ${{YELLOW}}→${{NC}} ${{RED}}$ip_address${{NC}}"
+            echo -e "${{BLUE}}${{BOLD}}[+] ${{NC}}Ejemplo válido:${{NC}} ${{GRAY}}192.168.1.100${{NC}}\\n"
+            return 1
+        fi
+        
+        # Validar rangos de octetos usando awk (más seguro)
+        if ! echo "$ip_address" | awk -F'.' '{{
+            for(i=1; i<=4; i++) {{
+                if($i < 0 || $i > 255) exit 1
+                if(length($i) > 1 && substr($i,1,1) == "0") exit 1
+            }}
+        }}'; then
+            echo -e "\\n${{RED}}[${{BOLD}}✘${{NC}}${{RED}}]${{NC}} IP inválida ${{RED}}→${{NC}} ${{BOLD}}$ip_address${{NC}}"
+            return 1
+        fi
+        
+        # Guardar en el archivo
+        echo "$ip_address $machine_name" > "$target_file"
+        
+        if [ $? -eq 0 ]; then
+            echo -e "\\n${{YELLOW}}▌${{NC}}Target establecido correctamente${{YELLOW}}${{BOLD}}:${{NC}}"
+            echo -e "${{GRAY}}—————————————————————————————————${{NC}}"
+            echo -e "${{CYAN}}→${{NC}} IP Address:${{GRAY}}...........${{NC}} ${{GREEN}}$ip_address${{NC}}"
+            echo -e "${{CYAN}}→${{NC}} Machine Name:${{GRAY}}.........${{NC}} ${{GREEN}}$machine_name${{NC}}\\n"
+        else
+            echo -e "\\n${{RED}}[${{BOLD}}✘${{NC}}${{RED}}]${{NC}} No se pudo guardar el target\\n"
+            return 1
+        fi
+        
+        return 0
+    }}"""
         ]
         try:
             with open(zshrc_path, 'a') as f:
