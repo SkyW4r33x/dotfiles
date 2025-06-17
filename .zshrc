@@ -302,8 +302,8 @@ alias -g -- --help='--help 2>&1 | bat --theme=ansi --language=help --style=plain
 
 # Configuración del editor
 if command -v vim > /dev/null; then
-    alias vim='/opt/nvim-linux64/bin/nvim'
-    alias vi='/opt/nvim-linux64/bin/nvim'
+    alias vim='/opt/nvim-linux-x86_64/bin/nvim'
+    alias vi='/opt/nvim-linux-x86_64/bin/nvim'
 fi
 
 alias target='setup_target'
@@ -403,59 +403,147 @@ function ll() {
 }
 # ------------------------------------- Actualizando Sistema ---------------------------------- #
 updateAndClean() {
-  # Definir colores y estilos
-  local BOLD='\033[1m'
-  local RESET='\033[0m'
-  local GREEN='\033[0;32m'
-  local YELLOW='\033[0;33m'
-  local BLUE='\033[0;34m'
-  local MAGENTA='\033[0;35m'
-  local CYAN='\033[0;36m'
-  local RED='\033[0;31m'
-  # Solicitar contraseña de root al inicio
-  echo -e "${YELLOW}${BOLD}Por favor, ingrese la contraseña de root para continuar:${RESET}"
-  sudo -v
-  # Verificar si se proporcionó la contraseña correctamente
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}${BOLD}Error: No se proporcionó la contraseña de root correctamente. Abortando.${RESET}"
-    return 1
-  fi
-  # Limpiar pantalla
-  clear
-  # Función auxiliar para ejecutar comandos
-  ejecutar_comando() {
-    echo -e "${CYAN}${BOLD}Ejecutando:${RESET} $1"
-    if eval "$1"; then
-      echo -e "${GREEN}[✓] $2${RESET}"
-    else
-      echo -e "${RED}${BOLD}[✗] Error al ejecutar: $1${RESET}"
+    # Colores auténticos de la terminal Kali Linux
+    local -r RESET='\033[0m'
+    local -r BOLD='\033[1m'
+    local -r DIM='\033[2m'
+    
+    # Colores exactos de Kali Linux terminal
+    local -r KALI_GREEN='\033[1;32m'          # Verde brillante (prompt principal)
+    local -r KALI_RED='\033[1;31m'            # Rojo brillante (errores)
+    local -r KALI_BLUE='\033[1;34m'           # Azul brillante (información)
+    local -r KALI_CYAN='\033[1;36m'           # Cian brillante (destacados)
+    local -r KALI_YELLOW='\033[1;33m'         # Amarillo brillante (advertencias)
+    local -r KALI_PURPLE='\033[1;35m'         # Magenta brillante (procesos)
+    local -r KALI_WHITE='\033[0;37m'          # Blanco normal (sin bold)
+    local -r KALI_GRAY='\033[38;2;94;92;100m'
+    #local -r KALI_GRAY='\033[0;37m'           # Gris (texto secundario)
+    local -r KALI_DARK_GREEN='\033[0;32m'     # Verde oscuro (texto normal)
+    local -r KALI_DARK_RED='\033[0;31m'       # Rojo oscuro
+    local -r KALI_DARK_BLUE='\033[0;34m'      # Azul oscuro
+    
+    # Símbolos estilo terminal hacker
+    local -r SUCCESS="[+]"
+    local -r ERROR="[-]"
+    local -r INFO="[*]"
+    local -r WORKING="▐ ▶"
+    
+    # Variables de control
+    local error_count=0
+    local start_time=$(date +%s)
+    
+    mostrar_encabezado() {
+        local titulo="$1"
+        local ancho=76
+        local padding=$(( (ancho - ${#titulo}) / 2 ))
+        
+        echo -e "\n${KALI_GREEN}${BOLD}╔$(printf '═%.0s' {1..74})╗${RESET}"
+        echo -e "${KALI_GREEN}${BOLD}║$(printf '%*s' $padding)${KALI_WHITE}${titulo}${KALI_GREEN}$(printf '%*s' $((74-padding-${#titulo})))║${RESET}"
+        echo -e "${KALI_GREEN}${BOLD}╚$(printf '═%.0s' {1..74})╝${RESET}\n"
+    }
+    
+    ejecutar_comando() {
+        local comando="$1"
+        local descripcion="$2"
+        local paso="$3"
+        
+        echo -e "${KALI_CYAN}${paso}${RESET} ${KALI_WHITE}${BOLD}${descripcion}${RESET}"
+        echo -e "${KALI_GREEN}${WORKING}${RESET} ${KALI_WHITE}Ejecutando: ${KALI_GRAY}${comando}${RESET}\n"
+        
+        # Ejecutar comando mostrando la salida en tiempo real con colores Kali
+        if eval "$comando" 2>&1 | while IFS= read -r linea; do
+            # Filtrar líneas vacías innecesarias
+            [[ -z "$linea" ]] && continue
+            
+            # Colorear diferentes tipos de salida con colores Kali auténticos
+            if [[ "$linea" =~ ^(Reading|Leyendo|Building|Construyendo|Calculating) ]]; then
+                echo -e "   ${KALI_BLUE}▶${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(Get:|Obj:|Hit:|Des:|Ign:) ]]; then
+                echo -e "   ${KALI_DARK_GREEN}↓${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(Setting|Configurando|Processing|Procesando) ]]; then
+                echo -e "   ${KALI_PURPLE}⚙${RESET} ${KALI_GRAY}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(Removing|Eliminando|Purging|Purgando) ]]; then
+                echo -e "   ${KALI_RED}✗${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(Installing|Instalando|Upgrading|Actualizando) ]]; then
+                echo -e "   ${KALI_GREEN}+${RESET} ${KALI_GRAY}${linea}${RESET}"
+            elif [[ "$linea" =~ (upgraded|actualizados|installed|instalados|removed|eliminados|Summary:) ]]; then
+                echo -e "   ${KALI_GREEN}✓${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(WARNING:|W:|Warning|ADVERTENCIA) ]]; then
+                echo -e "   ${KALI_YELLOW}!${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(E:|Error|ERROR) ]]; then
+                echo -e "   ${KALI_RED}!!${RESET} ${KALI_WHITE}${BOLD}${linea}${RESET}"
+            elif [[ "$linea" =~ (up to date|All packages are up to date) ]]; then
+                echo -e "   ${KALI_GREEN}✓${RESET} ${KALI_WHITE}${linea}${RESET}"
+            else
+                echo -e "   ${KALI_GRAY}${linea}${RESET}"
+            fi
+        done; then
+            echo -e "\n${KALI_GREEN}${SUCCESS}${RESET} ${KALI_WHITE}${descripcion} - ${KALI_GREEN}✓ COMPLETADO${RESET}"
+        else
+            echo -e "\n${KALI_RED}${ERROR}${RESET} ${KALI_WHITE}${descripcion} - ${KALI_WHITE}ERROR${RESET}"
+            ((error_count++))
+            return 1
+        fi
+        echo -e "${KALI_DARK_BLUE}$(printf '─%.0s' {1..76})${RESET}\n"
+    }
+    
+    echo -e "\n${KALI_BLUE}${INFO}${RESET} ${KALI_WHITE}Verificación de privilegios de administrador${RESET}"
+    echo -e "${KALI_GRAY}Se requiere acceso sudo para continuar con las operaciones${RESET}"
+    
+    if ! sudo -v; then
+        echo -e "\n${KALI_RED}${ERROR}${RESET} ${KALI_RED}${BOLD}Autenticación fallida. Acceso denegado.${RESET}"
+        return 1
     fi
-  }
-  # Cabecera
-  echo -e "\n\t\t${BLUE}${BOLD}.:: Actualización y Limpieza Automática ::.\n${RESET}"
-  # Actualizar lista de paquetes
-  echo -e "${YELLOW}${BOLD}[1/7] Actualizando la lista de paquetes disponibles...${RESET}"
-  ejecutar_comando "sudo apt update" "Lista de paquetes actualizada correctamente."
-  # Actualizar sistema
-  echo -e "\n${YELLOW}${BOLD}[2/7] Actualizando el sistema...${RESET}"
-  ejecutar_comando "sudo apt upgrade -y" "Sistema actualizado correctamente."
-  # Actualizar paquetes de distribución
-  echo -e "\n${YELLOW}${BOLD}[3/7] Actualizando paquetes de distribución...${RESET}"
-  ejecutar_comando "sudo apt dist-upgrade -y" "Paquetes de distribución actualizados correctamente."
-  # Eliminar paquetes innecesarios
-  echo -e "\n${YELLOW}${BOLD}[4/7] Eliminando paquetes no necesarios...${RESET}"
-  ejecutar_comando "sudo apt autoremove --purge -y" "Paquetes innecesarios eliminados correctamente."
-  # Limpiar paquetes descargados
-  echo -e "\n${YELLOW}${BOLD}[5/7] Limpiando paquetes descargados...${RESET}"
-  ejecutar_comando "sudo apt clean" "Paquetes descargados limpiados correctamente."
-  # Limpiar la caché de apt
-  echo -e "\n${YELLOW}${BOLD}[6/7] Limpiando la caché de apt...${RESET}"
-  ejecutar_comando "sudo apt autoclean" "Caché de apt limpiada correctamente."
-  # Actualizar la base de datos de locate
-  echo -e "\n${YELLOW}${BOLD}[7/7] Actualizando la base de datos de locate...${RESET}"
-  ejecutar_comando "sudo updatedb" "Base de datos de locate actualizada correctamente."
-  # Pie de página
-  echo -e "\n${BLUE}${BOLD}\t.:: Sistema actualizado y limpiado correctamente. ::.${RESET}" 
+    
+    echo -e "${KALI_GREEN}${SUCCESS}${RESET} ${KALI_WHITE}Privilegios verificados correctamente."
+    sleep 1
+
+    clear
+
+    mostrar_encabezado "SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA"
+    
+    echo -e "${KALI_BLUE}┌─ ${BOLD}${KALI_BLUE}INFORMACION DEL SISTEMA ${KALI_BLUE}─────────────────────────────────────────────────┐${RESET}"
+    echo -e "${KALI_BLUE}│${RESET} ${KALI_YELLOW}▐ ▶ ${RESET}Sistema: ${KALI_GRAY}$(lsb_release -ds 2>/dev/null || echo "$(uname -s) $(uname -r)")${RESET}"
+    echo -e "${KALI_BLUE}│${RESET} ${KALI_YELLOW}▐ ▶ ${RESET}Usuario: ${KALI_GREEN}$(whoami)${RESET}"
+    echo -e "${KALI_BLUE}└───────────────────────────────────────────────────────────────────────────┘${RESET}\n"
+
+ 
+    ejecutar_comando \
+        "sudo apt-get update" \
+        "Sincronizando repositorios de paquetes" \
+        "[1/7]"
+    
+    ejecutar_comando \
+        "sudo apt-get upgrade -y" \
+        "Instalando actualizaciones disponibles" \
+        "[2/7]"
+    
+    ejecutar_comando \
+        "sudo apt-get dist-upgrade -y" \
+        "Aplicando actualizaciones críticas del sistema" \
+        "[3/7]"
+    
+    ejecutar_comando \
+        "sudo apt-get autoremove --purge -y" \
+        "Eliminando dependencias obsoletas" \
+        "[4/7]"
+    
+    ejecutar_comando \
+        "sudo apt-get clean" \
+        "Limpiando archivos temporales de paquetes" \
+        "[5/7]"
+    
+    ejecutar_comando \
+        "sudo apt-get autoclean" \
+        "Optimizando caché del gestor de paquetes" \
+        "[6/7]"
+    
+    ejecutar_comando \
+        "sudo updatedb" \
+        "Reconstruyendo índice de archivos del sistema" \
+        "[7/7]"
+    
+    return $error_count
 }
 # ------------------------------------- plugins ---------------------------------- #
 source /usr/share/sudo-plugin/sudo.plugin.zsh
@@ -465,59 +553,141 @@ function mkt(){
         mkdir {nmap,content,exploits}
 }
 
-function dockerClean() {
-  BOLD='\033[1m'
-  RESET='\033[0m'
-  GREEN='\033[0;32m'
-  YELLOW='\033[0;33m'
-  BLUE='\033[0;34m'
-  RED='\033[0;31m'
-  CYAN='\033[0;36m'
-
-  clear
-
-  ejecutar_comando() {
-    echo -e "${CYAN}${BOLD}Ejecutando:${RESET} $1"
-    if eval "$1" &>/dev/null; then
-      echo -e "${GREEN}[✓] $2${RESET}"
-    else
-      if [[ "$3" == "ignore" ]]; then
-        echo -e "${YELLOW}[!] No hay elementos para $2${RESET}"
-      else
-        echo -e "${RED}[✗] Error al ejecutar: $1${RESET}"
-        echo -e "${YELLOW}   Detalles del error:${RESET}"
-        eval "$1" 2>&1 | sed 's/^/   /'
-      fi
+dockerClean() {
+    # Colores auténticos de la terminal Kali Linux
+    local -r RESET='\033[0m'
+    local -r BOLD='\033[1m'
+    local -r DIM='\033[2m'
+    
+    # Colores exactos de Kali Linux terminal
+    local -r KALI_GREEN='\033[1;32m'          # Verde brillante (prompt principal)
+    local -r KALI_RED='\033[1;31m'            # Rojo brillante (errores)
+    local -r KALI_BLUE='\033[1;34m'           # Azul brillante (información)
+    local -r KALI_CYAN='\033[1;36m'           # Cian brillante (destacados)
+    local -r KALI_YELLOW='\033[1;33m'         # Amarillo brillante (advertencias)
+    local -r KALI_PURPLE='\033[1;35m'         # Magenta brillante (procesos)
+    local -r KALI_WHITE='\033[0;37m'          # Blanco normal (sin bold)
+    local -r KALI_GRAY='\033[38;2;94;92;100m' # Gris (texto secundario)
+    local -r KALI_DARK_GREEN='\033[0;32m'     # Verde oscuro (texto normal)
+    local -r KALI_DARK_RED='\033[0;31m'       # Rojo oscuro
+    local -r KALI_DARK_BLUE='\033[0;34m'      # Azul oscuro
+    
+    # Símbolos estilo terminal hacker
+    local -r SUCCESS="[+]"
+    local -r ERROR="[-]"
+    local -r INFO="[*]"
+    local -r WORKING="▐ ▶"
+    
+    # Variables de control
+    local error_count=0
+    local start_time=$(date +%s)
+    
+    mostrar_encabezado() {
+        local titulo="$1"
+        local ancho=76
+        local padding=$(( (ancho - ${#titulo}) / 2 ))
+        
+        echo -e "\n${KALI_GREEN}${BOLD}╔$(printf '═%.0s' {1..74})╗${RESET}"
+        echo -e "${KALI_GREEN}${BOLD}║$(printf '%*s' $padding)${KALI_WHITE}${titulo}${KALI_GREEN}$(printf '%*s' $((74-padding-${#titulo})))║${RESET}"
+        echo -e "${KALI_GREEN}${BOLD}╚$(printf '═%.0s' {1..74})╝${RESET}\n"
+    }
+    
+    ejecutar_comando() {
+        local comando="$1"
+        local descripcion="$2"
+        local paso="$3"
+        local ignorar_vacio="$4"  # Nuevo parámetro para manejar casos "ignore"
+        
+        echo -e "${KALI_CYAN}${paso}${RESET} ${KALI_WHITE}${BOLD}${descripcion}${RESET}"
+        echo -e "${KALI_GREEN}${WORKING}${RESET} ${KALI_WHITE}Ejecutando: ${KALI_GRAY}${comando}${RESET}\n"
+        
+        # Ejecutar comando mostrando la salida en tiempo real con colores Kali
+        if eval "$comando" 2>&1 | while IFS= read -r linea; do
+            # Filtrar líneas vacías innecesarias
+            [[ -z "$linea" ]] && continue
+            
+            # Colorear diferentes tipos de salida con colores Kali auténticos
+            if [[ "$linea" =~ ^(Removing|Deleting|Pruning|Cleaning) ]]; then
+                echo -e "   ${KALI_RED}✗${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(Removed|Deleted|Untagged) ]]; then
+                echo -e "   ${KALI_GREEN}✓${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(WARNING|warning|Warning) ]]; then
+                echo -e "   ${KALI_YELLOW}!${RESET} ${KALI_WHITE}${linea}${RESET}"
+            elif [[ "$linea" =~ ^(ERROR|Error) ]]; then
+                echo -e "   ${KALI_RED}!!${RESET} ${KALI_WHITE}${BOLD}${linea}${RESET}"
+            else
+                echo -e "   ${KALI_GRAY}${linea}${RESET}"
+            fi
+        done; then
+            echo -e "\n${KALI_GREEN}${SUCCESS}${RESET} ${KALI_WHITE}${descripcion} - ${KALI_GREEN}✓ COMPLETADO${RESET}"
+        else
+            if [[ "$ignorar_vacio" == "ignore" ]] && eval "$comando" 2>&1 | grep -q "No such"; then
+                echo -e "\n${KALI_YELLOW}!${RESET} ${KALI_WHITE}${descripcion} - ${KALI_YELLOW}No hay elementos para procesar${RESET}"
+            else
+                echo -e "\n${KALI_RED}${ERROR}${RESET} ${KALI_WHITE}${descripcion} - ${KALI_WHITE}ERROR${RESET}"
+                echo -e "${KALI_YELLOW}   Detalles del error:${RESET}"
+                eval "$comando" 2>&1 | sed 's/^/   /' | while IFS= read -r linea; do
+                    echo -e "   ${KALI_RED}${linea}${RESET}"
+                done
+                ((error_count++))
+                return 1
+            fi
+        fi
+        echo -e "${KALI_DARK_BLUE}$(printf '─%.0s' {1..76})${RESET}\n"
+    }
+    
+    # Verificar si Docker está en ejecución
+    echo -e "\n${KALI_BLUE}${INFO}${RESET} ${KALI_WHITE}Verificación de estado de Docker${RESET}"
+    echo -e "${KALI_GRAY}Se requiere que Docker esté en ejecución y permisos adecuados${RESET}"
+    
+    if ! docker info &>/dev/null; then
+        echo -e "\n${KALI_RED}${ERROR}${RESET} ${KALI_RED}${BOLD}Error: Docker no está en ejecución o no tienes permisos suficientes.${RESET}"
+        return 1
     fi
-  }
-
-  # Verificar si Docker está en ejecución
-  if ! docker info &>/dev/null; then
-    echo -e "${RED}${BOLD}Error: Docker no está en ejecución o no tienes permisos suficientes.${RESET}"
-    echo -e "${YELLOW}Por favor, asegúrate de que Docker esté en ejecución y que tengas los permisos necesarios.${RESET}"
-    return 1
-  fi
-
-  # Cabecera
-  echo -e "\n\t\t${BLUE}${BOLD}.:: Limpieza de Docker ::.\n"
-  # Eliminar contenedores
-  echo -e "${YELLOW}${BOLD}[1/5] Eliminando todos los contenedores...${RESET}"
-  ejecutar_comando "sudo docker rm \$(docker ps -a -q) --force" "Contenedores eliminados correctamente." "ignore"
-  # Limpiar redes
-  echo -e "\n${YELLOW}${BOLD}[2/5] Limpiando redes no utilizadas...${RESET}"
-  ejecutar_comando "sudo docker network prune --force" "Redes no utilizadas eliminadas correctamente."
-  # Limpiar volúmenes
-  echo -e "\n${YELLOW}${BOLD}[3/5] Limpiando volúmenes no utilizados...${RESET}"
-  ejecutar_comando "sudo docker volume prune --force" "Volúmenes no utilizados eliminados correctamente."
-  # Eliminar imágenes
-  echo -e "\n${YELLOW}${BOLD}[4/5] Eliminando todas las imágenes...${RESET}"
-  ejecutar_comando "sudo docker rmi \$(docker images -q) --force" "Imágenes eliminadas correctamente." "ignore"
-  # Eliminar imágenes huérfanas
-  echo -e "\n${YELLOW}${BOLD}[5/5] Eliminando imágenes huérfanas...${RESET}"
-  ejecutar_comando "sudo docker images -q --filter \"dangling=true\" | xargs -r docker rmi --force" "Imágenes huérfanas eliminadas correctamente." "ignore"
-  # Pie de página
-  echo -e "\n${BLUE}${BOLD}\t   .:: Limpieza de Docker completada. ::.${RESET}"
+    
+    echo -e "${KALI_GREEN}${SUCCESS}${RESET} ${KALI_WHITE}Docker verificado correctamente${RESET}"
+    sleep 1
+    
+    clear
+    
+    mostrar_encabezado "SISTEMA DE LIMPIEZA DE DOCKER"
+    
+    echo -e "${KALI_BLUE}┌─ ${BOLD}${KALI_BLUE}INFORMACION DEL SISTEMA ${KALI_BLUE}─────────────────────────────────────────────────┐${RESET}" 
+    echo -e "${KALI_BLUE}│${RESET} ${KALI_YELLOW}▐ ▶ ${RESET}Sistema: ${KALI_GRAY}$(lsb_release -ds 2>/dev/null || echo "$(uname -s) $(uname -r)")${RESET}"
+    echo -e "${KALI_BLUE}│${RESET} ${KALI_YELLOW}▐ ▶ ${RESET}Usuario: ${KALI_GREEN}$(whoami)${RESET}"
+    echo -e "${KALI_BLUE}└───────────────────────────────────────────────────────────────────────────┘${RESET}\n"
+    
+    ejecutar_comando \
+        "sudo docker rm \$(docker ps -a -q) --force" \
+        "Eliminando todos los contenedores" \
+        "[1/5]" \
+        "ignore"
+    
+    ejecutar_comando \
+        "sudo docker network prune --force" \
+        "Limpiando redes no utilizadas" \
+        "[2/5]"
+    
+    ejecutar_comando \
+        "sudo docker volume prune --force" \
+        "Limpiando volúmenes no utilizados" \
+        "[3/5]"
+    
+    ejecutar_comando \
+        "sudo docker rmi \$(docker images -q) --force" \
+        "Eliminando todas las imágenes" \
+        "[4/5]" \
+        "ignore"
+    
+    ejecutar_comando \
+        "sudo docker images -q --filter \"dangling=true\" | xargs -r docker rmi --force" \
+        "Eliminando imágenes huérfanas" \
+        "[5/5]" \
+        "ignore"
+    
+    return $error_count
 }
+
 # Borrado seguro de archivos
 function rmk(){
         scrub -p dod $1

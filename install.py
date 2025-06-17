@@ -111,7 +111,7 @@ class CombinedInstaller:
         required_files = [
             "dash-to-panel-settings.dconf", 
             "top-bar-organizer.dconf",  # Añadido
-            "nvim-linux64.tar.gz", 
+            "nvim-linux-x86_64.tar.gz", 
             "JetBrainsMono.zip",
             "extractPorts.py", 
             ".zshrc", 
@@ -458,10 +458,10 @@ class CombinedInstaller:
 
     def install_neovim(self):
         print(f"\n{KaliStyle.INFO} Instalando Neovim y NvChad...")
-        nvim_archive = os.path.join(self.script_dir, "nvim-linux64.tar.gz")
+        nvim_archive = os.path.join(self.script_dir, "nvim-linux-x86_64.tar.gz")
         if os.path.exists(nvim_archive):
             subprocess.run(["sudo", "cp", nvim_archive, "/opt/"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["sudo", "tar", "xzf", "/opt/nvim-linux64.tar.gz", "-C", "/opt/"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["sudo", "tar", "xzf", "/opt/nvim-linux-x86_64.tar.gz", "-C", "/opt/"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             nvim_config = os.path.join(self.config_dir, "nvim")
             if os.path.exists(nvim_config):
                 shutil.move(nvim_config, f"{nvim_config}.bak")
