@@ -122,13 +122,15 @@ Este script automatiza la instalación y configuración de **SkyW4r33x**, un ent
 
 #### UpdateAndClean - Nuevo Diseño
 
-![UpdateAndClean](https://imgur.com/n6Dz9lm.png) 
+![UpdateAndClean](https://imgur.com/n6Dz9lm.png)
+
 _Interfaz visual mejorada para actualizaciones del sistema_
 
 ---
 #### DockerClean - Nuevo Estilo
 
-![DockerClean](https://imgur.com/IjYaDGd.png) 
+![DockerClean](https://imgur.com/IjYaDGd.png)
+
 _Presentación renovada para limpieza de Docker_
 
 ## ⌨️ Atajos de teclado
